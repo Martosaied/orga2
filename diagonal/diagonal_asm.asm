@@ -30,6 +30,8 @@
 ;     pop rbp
 ;     ret
 
+
+; Resolucion Profesor
 global diagonal
 
 %define SHORT_SIZE 2
