@@ -1,4 +1,3 @@
-
 section .data
 
 section .text
@@ -28,33 +27,38 @@ extern malloc
 ;*** Float ***
 
 floatCmp:
-    push rbp
-    mov rbp, rsp
-    mov xmm1, DWORD [rdi]
-    mov xmm2, DWORD [rsi]
-    comiss xmm1, xmm2
-    xor rax, rax 
-    jl .bmayora
-    jg .amayorb
-    .fin:
+     push rbp
+     mov rbp, rsp
+     xor rax, rax 
+     movss xmm1, [rdi]
+     comiss xmm1, [rsi]
+     jb .bmayora
+     ja .amayorb
+     .fin:
         pop rbp
         ret
-    .bmayora:
-        dec rax
-        jmp .fin
-    .amayorb:
-        inc rax
-        jmp .fin
+     .bmayora:
+         dec rax
+         jmp .fin
+     .amayorb:
+         inc rax
+         jmp .fin
 
 floatClone:
+    push rbp
+    mov rbp, rsp
     mov rdx, rdi ;EN RDX ESTA EL PUNTERO AL FLOAT ORIGINAL
     mov rdi, 4
     call malloc  ;EN RAX ESTA EL PUNTERO NUEVO
     mov ecx, DWORD [rdx]
     mov DWORD [rax], ecx
+    pop rbp
     ret
 floatDelete:
+    push rbp
+    mov rbp, rsp
     call free
+    pop rbp
     ret
 floatPrint:
 ret
@@ -66,9 +70,10 @@ ret
 strLen:
     xor rax, rax
     .loop:
-    mov dl, BYTE [rdi + rax]
-    cmp dl, 0
-    jne .loop
+        mov dl, BYTE [rdi + rax]
+        inc rax
+        cmp dl, 0
+        jne .loop
     ret
 strCmp:
 ret
