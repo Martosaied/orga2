@@ -28,13 +28,16 @@ extern malloc
 ;*** Float ***
 
 floatCmp:
-    mov edi, DWORD [rdi]
-    mov esi, DWORD [rsi]
-    cmp edi, esi
+    push rbp
+    mov rbp, rsp
+    mov xmm1, DWORD [rdi]
+    mov xmm2, DWORD [rsi]
+    comiss xmm1, xmm2
     xor rax, rax 
     jl .bmayora
     jg .amayorb
     .fin:
+        pop rbp
         ret
     .bmayora:
         dec rax

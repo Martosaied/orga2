@@ -2,13 +2,6 @@
 ==> Clone
 casa
 NULL
-==> Concat
-6
-4
-perro_loco
-perro_loco
-perro_loco
-perro_locoperro_loco
 ==> Cmp
 cmp(sar,sar) -> 0
 cmp(sar,23) -> -1
@@ -36,14 +29,14 @@ cmp(tix,taaa) -> -1
 cmp(tix,tbb) -> -1
 cmp(tix,tix) -> 0
 ===== Document
-{4, hola, 0.000000}
-{81, Perro, 0.000000}
+{4, hola, 0.430000}
+{81, Perro, 3.772000}
 cmp 1
 cmp -1
 cmp 0
 cmp 0
-{4, hola, 0.000000}
-{81, Perro, 0.000000}
+{4, hola, 0.430000}
+{81, Perro, 3.772000}
 ===== List
 ==> listAdd
 [00,aa,bb,dd,ff]

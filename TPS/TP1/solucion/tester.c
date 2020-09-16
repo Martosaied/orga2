@@ -109,11 +109,11 @@ void test_list(FILE *pfile) {
 void test_document(FILE *pfile) {
     fprintf(pfile,"===== Document\n");
     int dataI = 4;
-    int dataF = 0.43;
+    float dataF = 0.43f;
     document_t* a1 = docNew(3,TypeInt,&(dataI),TypeString,"hola",TypeFloat,&(dataF));
     docPrint(a1, pfile); fprintf(pfile,"\n");
     dataI = 81;
-    dataF = 3.772;
+    dataF = 3.772f;
     document_t* a2 = docNew(3,TypeInt,&(dataI),TypeString,"Perro",TypeFloat,&(dataF));
     docPrint(a2, pfile); fprintf(pfile,"\n");
     fprintf(pfile,"cmp %i\n",docCmp(a1, a2));
@@ -198,9 +198,9 @@ void test_tree(FILE *pfile) {
     treeDelete(t);
 
     t = treeNew(TypeInt, TypeFloat, 1);
-    intA = 12; floatA=6.2; treeInsert(t, &intA, &floatA);
-    intA = 28; floatA=4.4; treeInsert(t, &intA, &floatA); floatA=1.4; treeInsert(t, &intA, &floatA);
-    intA = 83; floatA=1.2; treeInsert(t, &intA, &floatA); floatA=5.4; treeInsert(t, &intA, &floatA);
+    intA = 12; floatA=6.2f; treeInsert(t, &intA, &floatA);
+    intA = 28; floatA=4.4f; treeInsert(t, &intA, &floatA); floatA=1.4f; treeInsert(t, &intA, &floatA);
+    intA = 83; floatA=1.2f; treeInsert(t, &intA, &floatA); floatA=5.4f; treeInsert(t, &intA, &floatA);
     intA = 12; treeRemove(t, &intA, &floatA);
     treePrint(t, pfile); fprintf(pfile,"\n");
     intA = 12; l = treeGet(t, &intA);
@@ -215,9 +215,9 @@ void test_tree(FILE *pfile) {
     treeDelete(t);
 
     t = treeNew(TypeInt, TypeFloat, 0);
-    intA = 12; floatA=6.2; treeInsert(t, &intA, &floatA);
-    intA = 28; floatA=4.4; treeInsert(t, &intA, &floatA); floatA=1.4; treeInsert(t, &intA, &floatA);
-    intA = 83; floatA=1.2; treeInsert(t, &intA, &floatA); floatA=5.4; treeInsert(t, &intA, &floatA);
+    intA = 12; floatA=6.2f; treeInsert(t, &intA, &floatA);
+    intA = 28; floatA=4.4f; treeInsert(t, &intA, &floatA); floatA=1.4f; treeInsert(t, &intA, &floatA);
+    intA = 83; floatA=1.2f; treeInsert(t, &intA, &floatA); floatA=5.4f; treeInsert(t, &intA, &floatA);
     intA = 12; treeRemove(t, &intA, &floatA);
     treePrint(t, pfile); fprintf(pfile,"\n");
     intA = 12; l = treeGet(t, &intA);
@@ -242,7 +242,7 @@ void test_1(char* filename){
 
 document_t* randomDocument() {
     int dataI = rand()%1000;
-    float dataF = ((float)(rand()%10000))/1000.0;
+    float dataF = ((float)(rand()%10000))/1000.0f;
     char* dataS = randomString(10);
     document_t* d = docNew(3,TypeInt,&(dataI),TypeString,dataS,TypeFloat,&(dataF));
     strDelete(dataS);
