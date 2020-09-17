@@ -3,50 +3,29 @@
 
 
 ==> Cmp
-cmp(sar,sar) -> 4210798
-cmp(sar,23) -> 4210798
-cmp(sar,taaa) -> 4210798
-cmp(sar,tbb) -> 4210798
-cmp(sar,tix) -> 4210798
-cmp(23,sar) -> 4210802
-cmp(23,23) -> 4210802
-cmp(23,taaa) -> 4210802
-cmp(23,tbb) -> 4210802
-cmp(23,tix) -> 4210802
-cmp(taaa,sar) -> 4210805
-cmp(taaa,23) -> 4210805
-cmp(taaa,taaa) -> 4210805
-cmp(taaa,tbb) -> 4210805
-cmp(taaa,tix) -> 4210805
-cmp(tbb,sar) -> 4210810
-cmp(tbb,23) -> 4210810
-cmp(tbb,taaa) -> 4210810
-cmp(tbb,tbb) -> 4210810
-cmp(tbb,tix) -> 4210810
-cmp(tix,sar) -> 4210814
-cmp(tix,23) -> 4210814
-cmp(tix,taaa) -> 4210814
-cmp(tix,tbb) -> 4210814
-cmp(tix,tix) -> 4210814
+cmp(sar,sar) -> 0
+cmp(sar,23) -> -1
+cmp(sar,taaa) -> -1
+cmp(sar,tbb) -> -1
+cmp(sar,tix) -> -1
+cmp(23,sar) -> 1
+cmp(23,23) -> 0
+cmp(23,taaa) -> 1
+cmp(23,tbb) -> 1
+cmp(23,tix) -> 1
+cmp(taaa,sar) -> 1
+cmp(taaa,23) -> -1
+cmp(taaa,taaa) -> 0
+cmp(taaa,tbb) -> -1
+cmp(taaa,tix) -> -1
+cmp(tbb,sar) -> 1
+cmp(tbb,23) -> -1
+cmp(tbb,taaa) -> 1
+cmp(tbb,tbb) -> 0
+cmp(tbb,tix) -> 1
+cmp(tix,sar) -> 1
+cmp(tix,23) -> -1
+cmp(tix,taaa) -> 1
+cmp(tix,tbb) -> -1
+cmp(tix,tix) -> 0
 ===== Document
-{4, , }
-{81, , }
-cmp 1
-cmp -1
-cmp 4210908
-cmp 4210913
-{4, , }
-{81, , }
-===== List
-==> listAdd
-[]
-[]
-==> listRemove
-[]
-===== Tree
-
-
-
-
-
-

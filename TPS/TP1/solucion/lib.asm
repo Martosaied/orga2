@@ -66,19 +66,69 @@ ret
 ;*** String ***
 
 strClone:
-ret
+    push rbp
+    mov rbp, rsp
+
+    xor rcx, rcx
+    .length:
+        mov dl, BYTE [rdi + rcx]
+        inc rcx
+        cmp dl, 0
+        jne .length
+    mov rbx, rdi
+    mov rdi, rcx
+
+    call malloc
+
+    xor rcx, rcx
+    .copy:
+        mov dl, BYTE [rbx + rcx]
+        mov BYTE [rax + rcx], dl
+        inc rcx
+        cmp dl, 0
+        jne .copy
+
+    pop rbp
+    ret
 strLen:
+    push rbp
+    mov rbp, rsp
     xor rax, rax
     .loop:
         mov dl, BYTE [rdi + rax]
         inc rax
         cmp dl, 0
         jne .loop
+    pop rbp
     ret
 strCmp:
-ret
+    push rbp
+    mov rbp, rsp
+
+    xor rcx, rcx
+    xor rax, rax
+    .loop:
+        mov r11, [rdi + rcx]
+        mov r10, [rsi + rcx]
+        cmp r11, r10
+        jb  .amayorb
+        ja  .bmayora
+        add r11, r10
+        jz  .fin
+        inc rcx
+        jmp .loop
+    .fin:
+        pop rbp
+        ret
+    .amayorb:
+        inc rax
+        jmp .fin
+    .bmayora:
+        dec rax
+        jmp .fin
+
 strDelete:
-    ;call free
+    call free
     ret
 strPrint:
 ret

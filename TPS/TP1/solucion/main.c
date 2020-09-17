@@ -25,6 +25,9 @@ int main (void){
     test_tree(pfile);
     test_document(pfile);
     fclose(pfile);
+    char* a = "cacona";
+    char* b = strClone(a);
+    printf("%s and %s", a, b);
     return 0;
 }
 
