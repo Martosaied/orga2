@@ -5,6 +5,8 @@ formato_fprintf_tree1:
     db '(', 0
 formato_fprintf_tree2:
     db ')->', 0
+formato_fprintf_str:
+    db 'NULL', 0
 section .text
 
 global floatCmp
@@ -175,6 +177,10 @@ strPrint:
     mov rbp, rsp
 
     xor rcx, rcx
+    mov dl, BYTE [rdi + rcx]
+    cmp dl, 0
+    je  .imprimirNULL
+
     .loop:
         mov dl, BYTE [rdi + rcx]
         inc rcx
@@ -188,8 +194,16 @@ strPrint:
 
     call fwrite
 
+    .fin:
     pop rbp
     ret
+
+.imprimirNULL:
+    mov     rdi, rsi
+    mov     rsi, formato_fprintf_str
+    mov     rax, 0
+    call    fprintf
+    jmp     .fin
 
 ;*** Document ***
 ;typedef struct s_docElem {

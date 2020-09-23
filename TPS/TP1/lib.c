@@ -317,10 +317,10 @@ list_t *treeGet(tree_t *tree, void *key)
     {
         switch (comp(key, current->key))
         {
-        case -1:
+        case 1:
             current = current->left;
             break;
-        case 1:
+        case -1:
             current = current->right;
             break;        
         default:
@@ -338,10 +338,10 @@ void treeRemove(tree_t *tree, void *key, void *data)
     {
         switch (comp(key, current->key))
         {
-        case -1:
+        case 1:
             current = current->left;
             break;
-        case 1:
+        case -1:
             current = current->right;
             break;        
         default:

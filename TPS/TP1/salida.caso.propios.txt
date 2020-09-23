@@ -1,0 +1,6 @@
+[1 + 1 = 3,AGUANTE EL 42,Mirame mama, alto tp de orga,Te extraño pabellon 1,aguante boca,martin yoel saied,moriste en madrid,patricio damian bruno,pero me rehuso a usar un for,re dificil pensar 10 strings]
+[0.000000,0.000000,0.000000,0.000000,0.000000,1.420000,2.100000,2.710000,3.140000,1782391808.000000]
+(-2)->[Charmander,Charmander](11)->[Bulbasaur,Bulbasaur,musica,musica](24)->[buscabullas,buscabullas,papanatas,papanatas](31)->[Pikachu,Pikachu](34)->[rima,rima]
+
+{12, 14, 3.140000, 2.780000, para cuando a vacuna, bill?, nas ganas de salir a chupar picaportes}
+{12, 14, 3.140000, 2.780000, para cuando a vacuna, bill?, nas ganas de salir a chupar picaportes}
