@@ -1,0 +1,67 @@
+===== String
+==> Clone
+casa
+NULL
+==> Cmp
+cmp(sar,sar) -> 0
+cmp(sar,23) -> -1
+cmp(sar,taaa) -> 1
+cmp(sar,tbb) -> 1
+cmp(sar,tix) -> 1
+cmp(23,sar) -> 1
+cmp(23,23) -> 0
+cmp(23,taaa) -> 1
+cmp(23,tbb) -> 1
+cmp(23,tix) -> 1
+cmp(taaa,sar) -> -1
+cmp(taaa,23) -> -1
+cmp(taaa,taaa) -> 0
+cmp(taaa,tbb) -> 1
+cmp(taaa,tix) -> 1
+cmp(tbb,sar) -> -1
+cmp(tbb,23) -> -1
+cmp(tbb,taaa) -> -1
+cmp(tbb,tbb) -> 0
+cmp(tbb,tix) -> 1
+cmp(tix,sar) -> -1
+cmp(tix,23) -> -1
+cmp(tix,taaa) -> -1
+cmp(tix,tbb) -> -1
+cmp(tix,tix) -> 0
+===== Document
+{4, hola, 0.430000}
+{81, Perro, 3.772000}
+cmp 1
+cmp -1
+cmp 0
+cmp 0
+{4, hola, 0.430000}
+{81, Perro, 3.772000}
+===== List
+==> listAdd
+[00,aa,bb,dd,ff]
+[00,aa,bb,dd,ff]
+==> listRemove
+[00,ff]
+===== Tree
+
+(12)->[pepe](28)->[carola,ramon](83)->[rara]
+(12)->[pepe](28)->[carola,ramon](83)->[rara]
+(12)->[](28)->[carola,ramon](83)->[rara]
+(12)->[](28)->[carola,ramon](83)->[]
+(12)->[](28)->[carola,ramon](83)->[ramon,rara]
+[]
+[carola,ramon]
+[ramon,rara]
+(12)->[](28)->[carola](83)->[rara]
+[]
+[carola]
+[rara]
+(12)->[6.200000](28)->[1.400000,4.400000](83)->[1.200000,5.400000]
+[6.200000]
+[1.400000,4.400000]
+[1.200000,5.400000]
+(12)->[6.200000](28)->[4.400000](83)->[1.200000]
+[6.200000]
+[4.400000]
+[1.200000]
