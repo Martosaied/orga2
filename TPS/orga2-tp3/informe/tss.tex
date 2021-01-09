@@ -1,0 +1,20 @@
+En este archivo se encuentran las definiciones iniciales de las TSS de las tareas INIT, IDLE, Rick y Morty. Así como también está definido
+de manera global 2 arrays en los que se encuentran las TSS de los Mr. Meeseeks de Morty y otro para los Mr. Meeseeks de Rick. Este último array tiene una correspondencia directa con los
+arrays de tareas definidas en el Scheduler. Donde el índice en el array del schduler corresponde al mismo índice - 1 en los arrays de TSS. \\
+La definición de las primeras 4 tareas mencionadas ocurre en tiempo de compilación para casi toda sus campos.
+ 
+Luego en \emph{tss_init}, la cual es ejecutada en el kernel, nos encargamos de cargar los valores que son obtenidos dinámicamente y de completar todas las TSS de los Mr. Meeseeks.
+\\
+Dentro de los campos que completamos de esta manera están:
+   \begin{itemize}
+       \item El CR3 el cual es obtenido a partir de inicializar el mapa de memoria de las tareas Rick y Morty. Luego dichos CR3 son utilizados en las tareas meeseeks también ya que comparten mapas de memorias.
+       \item La pila de nivel de 0 para todas las tareas, para la cual pedimos una página libre del kernel.
+   \end{itemize}
+Algo para aclarar, debido a que las TSS de cada tarea se encuentran definidas en este archivo, decidimos completar la base de los índices de la GDT de las tareas en tss_init.
+Obteniendo la GDT es fácil modificar esta información, ya que los índices de los meeseeks corresponden a sus indice en la GDT + un índice base (el índice en la gdt) de Rick o Morty respectivamente. 
+El resto de los campos, como dijimos, en su mayoría fueron completados a partir de la consigna.
+\\
+Una última aclaración, en tss.c se puede cómo creamos las tss de los Mr Meeseeks con EIP y ESP en 0.
+Esto se debe a que luego, en game.c a la hora de efectivamente crear una nueva tarea Mr. Meeseeks seteamos el EIP y el ESP mapeando el código que ejecuta la tarea
+desde el área virtual de los Mr. Meeseeks (organizado a partir de sus índices) a la celda en la que se encontrara en el mapa. Daremos más detalles
+a la hora de explicar game.c.

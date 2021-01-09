@@ -1,0 +1,13 @@
+generador_graficos_tamaños.py ImagenFantasma 50 50 50
+ASM STD: [1430292.2152507715]
+ASM TRIMMED: [7068074.489887641]
+ASM VAR: [2045735821006.959]
+O3  STD: [8329982.19226892]
+O3  TRIMMED: [73644864.34862386]
+O3  VAR: [69388603323517.33]generador_graficos_tamaños.py ImagenFantasma 50 50 50
+ASM STD: [ 1 9 0 5 . 9 2 7 5 7 3 8 3 9 3 0 7 1 ]
+ASM TRIMMED: [ 5 0 8 4 . 1 9 5 0 1 1 3 3 7 8 6 9 ]
+ASM VAR: [ 3 6 3 2 5 5 9 . 9 1 6 7 2 0 9 8 7 8 ]
+O3  STD: [ 1 9 9 9 8 . 2 7 8 0 7 1 5 4 5 1 7 ]
+O3  TRIMMED: [ 4 3 3 0 2 . 4 3 1 9 2 4 8 8 2 6 3 ]
+O3  VAR: [ 3 9 9 9 3 1 1 2 5 . 8 2 6 8 4 4 4 ]

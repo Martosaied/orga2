@@ -1,0 +1,87 @@
+\subsection{Función Reforzar Brillo}
+
+\par El filtro funciona de la siguiente manera: recorriendo la imagen píxel a píxel, dados dos umbrales de brillos, uno inferior y otro superior,
+para todo píxel que supere el umbral superior se le sumará un valor predeterminado a cada componente
+del mismo (exceptuando la transparencia que siempre permanecerá en 255) y para todo aquel que sea menor al umbral inferior se le resta de igual manera otro valor. Si el brillo del píxel no supera el umbral superior ni es menor al inferior, permanece inalterado.
+\par Un detalle a aclarar es que aunque el brillo del píxel pueda cumplir con ambos umbrales a la vez (por ejemplo, umbral superior igual 0 e inferior igual 255) la aplicación del filtro solo ocurriría para el superior, debido a que se aplican de manera excluyente y ordenada empezando por el superior.
+\par La implementación en C de este filtro sigue al pie de la letra esa explicación.
+Calcula el brillo de cada píxel de manera individual y evalúa qué umbral supera o no este para luego sumar, restar o dejar igual sus componentes.
+
+\par La implementación en ASM, que se explicará más en detalle difiere bastante en su funcionamiento y gracias al uso de instrucciones SIMD se puede lograr un
+aumento en la velocidad de ejecución del filtro considerable. Sin embargo, esto conlleva un cambio en la forma en que se piensa el flujo de los datos.
+\par El código en ASM, se divide en 2 partes, donde la segunda a su vez se divide en 3 etapas.
+\begin{itemize}
+        \item La carga de parámetros y máscaras desde memoria
+        \item El loop que aplica el filtro para 4 píxeles en simultáneo
+\end{itemize}
+La carga de parámetros desde memoria tiene sus peculiaridades, debido al procesado de múltiples píxeles en simultáneo.
+\begin{codesnippet}
+        \begin{verbatim}
+        movd        xmm9, [rbp + 40]
+        packssdw    xmm0, xmm9
+        packsswb    xmm0, xmm9
+        pxor        xmm0, xmm0
+        pshufb      xmm9, xmm0
+	\end{verbatim}
+\end{codesnippet}
+
+\par El ejemplo arriba muestra como se obtiene desde memoria el valor a restar en caso de no superar el umbral inferior.
+Primero obtenemos un entero de 32 bits desde memoria, aunque con un rango acotado entre 0 y 255. Como se sabe que estará acotado y este valor se quiere sumar componente a componente lo se empaqueta desde DW a BYTE.
+
+\par En el caso de los umbrales la lógica es la misma pero no se requiere empaquetar estos valores en 1 byte sino que con solo hacer broadcast en su registro es suficiente.
+Para esto se hace uso de instrucciones como packssdw y packsswb que permiten empaquetar desde double word a word y de word a byte de manera saturada respectivamente.
+También pshufb y pshufd que dado una máscara nos permiten repetir el valor deseado por todo el registro.
+\par La segunda parte del código está en el loop, el cual a su vez como se dijo anteriormente, está divido en 3 etapas.
+\begin{itemize}
+        \item Cálculo de brillo
+        \item Cálculo de máscara para píxeles que superen el umbral superior
+        \item Cálculo de máscara para píxeles que no superen el umbral inferior
+\end{itemize}
+\par Al ser similares y para simplificar este desarrollo, se detellarán la segunda y tercera etapa juntas.
+
+\textbf{Cálculo del brillo:}
+\par El brillo fue calculado de la misma manera que en ImagenFantasma, con la única diferencia de la última instrucción, donde en este caso es necesario
+tener los valores signados para luego poder operar con máscaras.
+\begin{codesnippet}
+        \begin{verbatim}
+        pmaddubsw       xmm0, xmm1    
+        phaddw     	    xmm0, xmm0
+        psraw      	    xmm0, 2 
+        pmovzxwd        xmm0, xmm0 
+        psubd           xmm0, xmm12  
+	\end{verbatim}
+\end{codesnippet}
+
+
+\textbf{Cálculo de máscaras:}
+\par Aquí se explica el cálculo de la máscara para el umbral inferior. El superior es igual solo que son intercambiados los registros de dst y src. A su vez, también hay un detalle el cual, como el umbral superior se compara primero, no es necesario tener en cuenta.
+\begin{codesnippet}
+        \begin{verbatim}
+        movdqa      	xmm11, xmm7
+        pcmpgtd     	xmm11, xmm0
+        pand        	xmm11, xmm10 
+        movdqa      	xmm10, xmm9
+        pand        	xmm10, xmm11 
+        psubusb     	xmm2, xmm10
+	\end{verbatim}
+\end{codesnippet}
+
+\par Primero se guarda el umbral en xmm11 (esto en el cálculo del umbral superior no es necesario ya que usamos pcmpgtd con los registros intercambiados, por lo que la máscara queda en un registro que se reinicia en cada loop).
+Calculamos la máscara comparando el umbral con los brillos de nuestros píxeles. La comparación se realiza de manera que si el valor de los números en xmm11 es superior a los de xmm0 (dw a dw) se setean una dw de 1’s en la posición correspondiente de xmm11. Como xmm11 contiene el umbral inferior esto es equivalente a:
+
+\begin{verbatim}
+    Para todo i (donde i es un número del 0 al 3 que indica la posición del dw en el xmm)
+    xmm11[i] > xmm=[i] → xmm11[i] = 1’s sino 0’s (umbralInf > brillo)	
+\end{verbatim}
+
+\par Luego se ejecuta un pand en xmm10. En xmm10 está la máscara invertida que fue usada en la comparación con el umbral superior. Esto permite descartar aquellos píxeles que cumplían con la condicion de dicho umbral, ya que no es posible aplicar ambos cálculos a un píxel que a su vez cumpla ambas condiciones.
+Luego se mueven a xmm10 los valores a restar y se les aplica un pand para solo dejar seteados los bytes que corresponde restar. Por último se lleva a cabo la resta.
+
+\par Luego de esto, antes de terminar con la iteración, usando una máscara para las transparencias, vuelven a ser seteados en 255 en el byte que corresponda.\\
+\begin{codesnippet}
+        \begin{verbatim}
+        por xmm4, xmm12     ; en xmm12 está la máscara para las transparencias
+	\end{verbatim}
+\end{codesnippet}
+
+Por último se avanzan las posiciones a acceder usando rdi y rsi y decrementamos rcx.

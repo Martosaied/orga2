@@ -1,0 +1,11 @@
+\par Como ha sido demostrado en la sección de comparación, utilizar instrucciones vectoriales en algoritmos tales como los pedidos en la consigna 
+es altamente superior en términos de eficiencia a cualquier implementación que trabaje con datos escalares. Es posible afirmar esto puesto que ninguna optimización del código en C
+fue capaz de acercarse en rendimiento al algoritmo que aprovecha las instrucciones SIMD.
+\par Una observación interesante en cuanto al experimento del ratio de ciclos en C / ciclos en ASM es que al ser constante frente a los distintos tamaños de imágenes, 
+podemos concluir que los algoritmos pertenecen a la misma clase de complejidad temporal y sus funciones T(n) de tiempo solo difieren en un factor constante.
+\par Otro resultado al que se pudo llegar fue que, mientras que convertir los operandos que pretendemos manipular a números en punto flotante es la mejor forma de obtener la 
+precisión deseada, este proceso es costoso y puede ser aproximado por operaciones con enteros que sacrifiquen un poco de precisión por mejor rendimiento, habiendo a su vez distintos 
+grados optimización, a costo de un mayor error por componente de píxel.
+\par Por último, manipulando las variables de un algoritmo para forzar saltos condicionales a voluntad y con el objetivo de verificar la existencia de algún tipo de mecanismo
+del procesador que optimice el pipeline prediciendo los saltos que tomará el programa, se ha concluido que efectivamente hay diferencias de velocidad promedio entre las distintas 
+poblaciones muestrales, siendo el grupo de corridas que siempre toma el mismo salto quien exhibe el mejor y más predecible rendimiento.

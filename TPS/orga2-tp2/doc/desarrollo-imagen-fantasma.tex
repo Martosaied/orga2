@@ -1,0 +1,44 @@
+\subsection{Función Imagen Fantasma}
+\par El filtro consiste en guardar en cada píxel de la imagen de destino una combinación lineal de las componentes del píxel original con el brillo del píxel de la imagen fanstasma.
+\par Para llevar a cabo esto, el código consiste de 2 ciclos: uno que itera las filas de la imagen y otro, las columnas.
+\par Cada iteración del ciclo procesa 4 píxeles adyacentes y se divide en 3 etapas:
+\begin{itemize}
+	\item calcular el brillo de la imagen fantasma para cada píxel
+	\item multiplicar cada componente de los píxeles por 0.9
+	\item sumar ambos resultados y guardarlos en la imagen destino
+\end{itemize}. 
+\par Para acceder al píxel de la imagen fantasma correspondiente al píxel en la posición (i, j) de la imagen original se deben calcular las coordenadas (i/2 + offsetx,  j/2 + offsety). 
+Notemos el siguiente detalle: si se desea calcular las coordenadas “fantasmas” de los siguientes 4 píxeles consecutivos [(i, j), (i+1, j), (i+2, j), (i+3, j)], 
+el resultado sería  [(i/2, j/2), (i/2, j/2), (i/2+1 , j/2), (i/2+1, j/2)]. Es decir, para obtener los píxeles fantasmas para los 4 píxeles consecutivos a partir de (i, j), alcanza con traer 2 píxeles a partir de (i/2 + offsetx, j/2 + offsety).
+\par Eso es exactamente lo que se hace en \texttt{movq xmm7, [rdi + rax]}, por lo que el registro \texttt{xmm7} queda con el siguiente contenido:\\
+\texttt{[ -- | -- | -- | -- | -- | -- | -- | -- | a2 | r2 | g2 | b2 | a1 | r1 | g1 | b1 ]}
+\par Asimismo, en el registro \texttt{xmm8} había cargado previamente valores definidos en la sección rodata para almacenar el siguiente valor:\\
+\texttt{[ 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 2 | 1 | 0 | 1 | 2 | 1 ]}, 
+que luego deberá ser multiplicado con \texttt{xmm7}. Para eso se usa la instrucción \texttt{pmaddubsw}, que mutiplica dos registros byte (no signado) a byte (signado), suma los productos de a pares adyacentes y los guarda en words, 
+usando saturación para las operaciones, por lo que el registro \texttt{xmm7} queda así: \\
+\texttt{[ 0 | 0 | 0 | 0 | 1*r2 + 0*a2 | 1*b2 + 2*g2 | 1*r1 + 0*a1 | 1*b1 + 2*g1 ]} 
+\par Solo resta hacer una suma horizontal y una división para obtener los brillos. Se computa la suma de a words (\texttt{phaddw xmm7, xmm7}) y luego se divide por 8 haciendo un shift a la derecha de 3 bits (en el pseudo código se divide al brillo por 4 y luego por 2). 
+El registro \texttt{xmm7} ahora contiene el siguiente valor: \\
+\texttt{[ 0 | 0 | brillo2 | brillo1 | 0 | 0 | brillo2 | brillo1 ]}
+\par Lo único que falta es asegurarse de que los valores ocupen un byte y estén ubicados adecuadamente.
+\par Primero hay que empaquetarlos usando \texttt{packuswb xmm7, xmm7}. De esa manera el registro contiene los siguientes valores: \\
+\texttt{[ 0 | 0 | b2 | b1 | 0 | 0 | b2 | b1 | 0 | 0 | b2 | b1 | 0 | 0 | b2 | b1 ]}
+\par Sin embargo, no son útiles los bytes dispuestos así, ya que luego será necesario hacer una suma vertical con las componentes de los píxeles, 
+por lo que hay que recurrir a la instrucción \texttt{pshufb} para reordenar los bytes y que terminen alineados de la siguiente manera: \\
+\texttt{[ 0 | b2 | b2 | b2 | 0 | b2 | b2 | b2 | 0 | b1 | b1 | b1 | 0 | b1 | b1 | b1 ]}
+\par Luego se deben traer 4 píxeles a partir de i, j y multiplicarlos por 0.9. Se acceden a estos 4 píxeles consecutivos con \texttt{movdqu} y se guardan los 128 bits de información en \texttt{xmm3}. Lo que sigue son instrucciones muy costosas pero indispensables para mantener la precisión de las operaciones.
+\par Para multiplicar por 0.9, se decidió usar floats de 32 bits, por lo que cada píxel deberá ocupar un registro \texttt{xmm} completo, ya que cada una de sus 4 componentes ocupará 32 bits. El procedimiento para separar los píxeles en registros distintos es el siguiente:
+\begin{itemize}
+	\item \texttt{pmovzxbd xmmi, xmm3} para copiar los primeros 4 bytes de \texttt{xmm3}, extenderlos con ceros y guardarlos en \texttt{xmmi} para i de 0 a 3
+	\item \texttt{psrldq xmm3, 4} para correr los píxeles 1 lugar a la derecha para i de 0 a 2
+\end{itemize}
+
+\par Luego, para \texttt{xmmi} para i de 0 a 3, ejecuto
+\begin{itemize}
+	\item \texttt{cvtdq2ps xmmi, xmmi} para convertir cada componente a float
+	\item \texttt{mulps xmmi, xmm9}, donde el valor de \texttt{xmm9} es \texttt{[ 1 | 0.9 | 0.9 | 0.9 ]}
+	\item \texttt{cvtps2dq xmmi, xmmi} para convertir cada componente a enteros de 32 bits
+\end{itemize}
+
+\par Por último, se empaquetan todas las componentes usando \texttt{packusdw} y \texttt{packuswb}, se suma de forma saturada y de a bytes \texttt{xmm0} (donde quedaron los 4 píxeles) 
+con \texttt{xmm7} (donde estaban todos los brillos) y se guarda el resultado en la imagen destino.

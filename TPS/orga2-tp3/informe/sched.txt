@@ -1,0 +1,49 @@
+En este archivo primero que nada, nos definimos 2 arreglos (inicializados en 0) de 11 elementos cada uno,
+llamados tasks_rick y tasks_morty, los cuales se encargarán de almacenar estructuras de datos
+con información necesaria para todas las tareas de Rick y de Morty respectivamente. 
+Es decir, almacenarán structs de las tareas principales de cada uno de los jugadores y
+sus 10 posibles "subtareas" MrMeeseeks.
+Estas estructuras están declaradas en el archivo sched.h y proveen datos sobre:
+- idx_gdt: el índice del descriptor de la tarea en la gdt.
+- es_jugador: si este bit está encendido, la tarea es Rick o Morty, si esta apagado 
+    es un MrMeeseeks de alguna de las tareas anteriores.
+- y,x: posiciones de la tarea sobre los ejes del mapa del juego.
+- cap_movimiento: capacidad de movimiento de la tarea (válido en caso de ser MrMeeseeks).
+- uso_portal_gun: indica si la tarea ya utilizó su portal gun o no.
+- status: indica si la tarea es parte de las tareas activas para que el scheduler
+    sepa si debe alocarla para que sea ejecutada o no. De no serlo, la saltea.
+- isrNumber: atributo utilizado para el display del reloj de cada tarea.
+
+Al inicializar el scheduler, seteamos los valores correspondientes a las tareas de
+Rick y Morty, con el bit de status en 1 para ambos, y asignandole a cada uno de los 
+elementos del arreglo su índice correspondiente en la GDT (junto con su nivel de privilegio).
+
+Creamos tambien ciertas variables globales que nos van a ayudar a conocer el estado de las tareas,
+la tarea actual y si el juego finalizó.
+
+Adentrándonos más en la funcionalidad del scheduler en sí, tenemos una serie de funciones
+que son útiles para distintas ocasiones en el juego:
+- _maybe_degradar_cap: simplemente se encarga de disminuir la capacidad de movimiento de la tarea
+actual, utilizando el atributo antes mencionado de cap_movimiento, que tal como lo indica el enunciado
+se disminuye cada 2 clocks sobre la tarea indicada. En el caso de que la tarea sea Rick o Morty y no
+uno de sus MrMeeseeks no tiene efecto.
+- sched_next_task: ésta función es muy importante porque es la encargada de devolverme
+el índice de la gdt de la siguiente tarea en la lista de tareas del scheduler (formato round-robin).
+Aquí primero chequeamos si la tarea anterior a la que debemos devolver fue una de Rick
+o una de Morty, y hacemos un "toggle" de la variable global ultimo_fue_rick segun corresponda, y luego
+(tambien dependiendo del caso anterior para determinar el caso siguiente) buscamos la siguiente tarea con
+status=1 para saber cual es la que corresponde devolver para hacer el switch. Notamos también que 
+como estamos en formato Round-Robin, si se llega al final de la lista de tareas, se vuelve a la primer
+posición del arreglo.
+- reset_esp: reseteamos el esp0 de la tarea corriéndolo hasta la base de su pila.
+- desalojar_tarea: usamos ésta función para desalojar la tarea actual, seteando su
+status en 0 (ie, sacándola de la lista de tareas disponibles para alocar con el scheduler), reseteando
+el esp con la funcion explicada arriba y usando el cr3 actual para desmapear el area de memoria
+de la tarea, haciendo el cálculo de la direccion base de la memoria virtual, sumado a 2 veces el 
+tamaño de las páginas (ya que sabemos que cada tarea ocupa 2 páginas) y usamos el índice de la tarea
+para terminar de ubicar la dirección de memoria a desmapear. En caso de que la tarea a desalojar
+sea la de Rick o Morty, directamente devolvemos el selector de la tarea IDLE.
+- desalojar_tarea_indice: se utiliza únicamente para el caso de use_portal_gun, desalojando una tarea
+cuyo índice es pasado por parametro. Se desaloja de la misma manera que se desalojaba en la funcion
+desalojar_tarea, pero en este caso siendo una funcion void y usando el índice recibido para ubicar la
+tarea dentro de los arreglos de tasks mencionados anteriormente.

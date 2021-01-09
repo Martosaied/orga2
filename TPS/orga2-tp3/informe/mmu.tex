@@ -1,0 +1,34 @@
+El archivo de la MMU es uno corto pero que lleva el peso de la asignación y mapeo de páginas para
+tareas, por lo que es esencial para el correcto funcionamiento de la distribución de memoria.
+Para la inicialización de la MMU lo único que hacemos es asignar a la variable global
+que definimos como \emph{proxima_pagina_libre} el puntero a la primer dirección de
+páginas libres, para poder usarlo después.
+Siguiendo con una descripción de las diferentes funciones definidas en este archivo, explicamos:
+\begin{itemize}
+    \item mmu_next_free_kernel_page: simplemente la utilizamos para conseguir la próxima página libre
+    del kernel, tal como lo indica su nombre. Ésto lo hacemos devolviendo el valor de la variable de
+    \emph{proxima_pagina_libre} y actualizando su valor a la siguiente página (sumándole el tamaño de una página).
+    \item mmu_init_kernel_dir: es la encargada de realizar el mapeo con \emph{identity mapping} de los primeros 4Mb
+    de memoria que son dedicados al kernel. Esto lo hacemos agarrando un puntero a la dirección del Page Directory y
+    de la Page Table dados por la cátedra en el enunciado. Inicializamos en 0 las 1024 entradas de cada una
+    y seteamos la base y los atributos necesarios en la primer entrada del PD, siendo que va a apuntar al PT que 
+    mencionamos arriba. También, seteamos los atributos de todas las entradas de la PT. Notar que como estamos haciendo
+    \emph{identity mapping}, armamos un ciclo que hace corresponder la direccion fisica asociada como base, con el índice
+    de cada entrada en la PT. Finalmente, retornamos el puntero a la PD.
+    \item mmu_map_page: esta función hace el mapeo de una dirección virtual a una dirección física, utilizando el CR3 para
+    determinar la dirección de la PD, que los recibimos por parámetro. Ésto lo hacemos primero obteniendo los bits de la dirección
+    de memoria virtual que representan la dirección del PD, y obteniendo también el índice a la PT correspondiente.
+    Con el CR3 recibido por parámetro y el \emph{directoryIdx}, logramos llegar al descriptor de tabla de páginas, chequeamos su bit
+    de present, que si está en cero, nos va a indicar que tenemos que ir a buscar una nueva página para asignarle una nueva PT, la cual
+    inicializamos con todas sus entradas en 0, y al descriptor de tabla de páginas le seteamos el bit present en 1. Nuevamente, asignamos los atributos
+    necesarios. Notar que no nos preocupamos por los niveles de privilegio porque confiamos en que los parámetros que ingresan son correctos.
+    Finalmente, accedemos a la entrada de la tabla de páginas, y asignamos a la entrada correspondiente, dada por el table index que obtuvimos
+    antes, la dirección física pasada por parámetro, junto con sus atributos. Para terminar con el mapeo, hacemos un tlbflush (proporcionado por la cátedra).
+    \item mmu_unmap_page: seguimos la misma lógica que el map, pero seteamos el bit de present de la PTE en 0.
+    \item mmu_init_task_dir: la utilizamos para crear el esquema de paginación de una tarea. Lo que hacemos es tomar una nueva página que
+    representa un nuevo Page Directory, cuyas entradas inicializamos todas en 0, y al igual que en \emph{mmu_map_page}, seteamos la primer entrada
+    con sus atributos, apuntando además a la tabla de páginas del kernel. Utilizamos \emph{mmu_map_page} para mapear el codigo de la tarea en el directorio de la tarea,
+    y también hacemos \emph{identity mapping} para el área de kernel. Copiamos la memoria de codigo desde la dirección de
+    \emph{code_start} que recibimos por parámetro, a la dirección física apuntada por la virtual que obtuvimos antes para realizar el \emph{identity mapping}, y finalmente
+    desmapeamos éste area que ya no necesitamos mantener mapeada. Para terminar, usamos un tlbflush al igual que en las funciones anteriores. 
+\end{itemize}

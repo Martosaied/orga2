@@ -1,0 +1,15 @@
+\ El segundo trabajo práctico de Organización del Computador II tiene por objetivos tanto ejercitar el uso de instrucciones SIMD, 
+como desarrollar un informe riguroso que presente comparaciones de distintas implementaciones de un mismo algoritmo y experimentos en base 
+a los distinos filtros especificados en la consigna. 
+\par SIMD (Single Instruction, Multiple Data) es un modelo de procesamiento de datos vectorial, cuya principal diferencia con las instrucciones escalares
+tradicionales (por ejemplo, las que trabajan con los registros de propósito general en una arquitectura x86) es que las primeras son capaces de operar sobre varios
+datos en paralelo (por ejemplo, sumar 8 pares de números y guardar el resultado en un registro).
+\par En 1999 Intel introdujo a su línea de CPUs 70 nuevas instrucciones como parte del estandar SSE (Streaming SIMD Extensions), agregándole capacidad de procesamiento
+vectorial a la arquitectura x86. La primer parte de este trabajo práctico consiste en implementar filtros para imágenes utilizando dichas instrucciones, de modo que se 
+procesen al menos 2 píxeles simultáneamente por cada iteración de los algoritmos presentados.
+\par En este informe se busca evidenciar las diferencias de rendimiento que hay entre una implementación de un filtro escrita en lenguaje ensamblador utilizando instrucciones SIMD, 
+y una implementación en lenguaje C del mismo donde sólo se procesa un píxel por cada iteración del ciclo. Se espera observar un rendimiento superior en la implementación 
+en lenguaje ensamblador, y una brecha que se acorta cada vez más a medida que aumentamos el nivel de optimización en el compilador del lenguaje C.
+\par Finalmente, los experimentos realizados buscarán proveer un entendimiento más profundo en cuanto al funcionamiento de los filtros y de la arquitectura x86. En primer lugar, 
+se evaluará cuánta precisión se pierde y cuánto rendimiento se gana al reemplazar el uso de operaciones en punto flotante por distintas aproximaciones con enteros en el filtro Imagen Fantasma. 
+El último experimento explorará el comportamiento de la CPU frente a distintos escenarios relacionados con los saltos condicionales. 

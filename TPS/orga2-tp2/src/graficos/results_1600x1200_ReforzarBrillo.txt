@@ -1,0 +1,13 @@
+generador_graficos_tamaños.py ReforzarBrillo 50 200 50 10 10
+ASM STD: [799560.4392829299]
+ASM TRIMMED:[4576687.085057471]
+ASM VAR:[639296896066.3118]
+O3  STD:[7504282.67115437]
+O3  TRIMMED:[27233293.33483146]
+O3  VAR:[56314258408587.76]generador_graficos_tamaños.py ReforzarBrillo 50 200 50 50 50
+ASM STD: [ 1 0 7 9 . 0 0 8 4 6 2 9 9 2 7 0 3 5 ]
+ASM TRIMMED: [ 3 1 2 2 . 8 5 3 2 1 1 0 0 9 1 7 4 ]
+ASM VAR: [ 1 1 6 4 2 5 9 . 2 6 3 2 0 9 8 7 6 4 ]
+O3  STD: [ 2 2 8 4 4 . 5 8 3 5 2 2 1 0 8 4 2 ]
+O3  TRIMMED: [ 2 3 9 1 8 . 5 0 7 7 9 5 1 0 0 2 2 4 ]
+O3  VAR: [ 5 2 1 8 7 4 9 9 6 . 2 9 8 5 8 7 6 ]

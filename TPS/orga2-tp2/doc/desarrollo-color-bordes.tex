@@ -1,0 +1,214 @@
+\subsection{Función Color Bordes}
+
+\par El objetivo de este filtro es asignar a cada píxel que forma parte de un borde en la imagen,
+un valor calculado en base a los colores de los píxeles que lo rodean.
+
+\par Esto sucede mediante un cálculo que toma el valor absoluto de la diferencia entre los
+valores BGR (blue, green y red ) de cada píxel, haciendo esto sobre un eje vertical y
+horizontal. Es decir, este cálculo se aplica a aquellos valores que rodean a cada píxel
+por encima, por debajo (eje y) y por los costados (eje x), y de ese cálculo sale un
+único valor que se le asigna al píxel de salida.
+\par Nótese también que los píxeles tienen una componente de transparencia $a$, siendo la
+codificacion de los píxeles de la forma BGRA (blue, green, red y alpha), pero en este caso
+no se opera sobre la componente de transparencia, solo aquellas de colores.
+
+\par Ahora que fue presentada la idea para la comprensión general del funcionamiento del filtro,
+se procede a una descripción detallada de una iteración dentro de la función que
+la implementa:
+
+
+
+\par Como el filtro requiere que los píxeles de los bordes no sean iterados, le restamos al alto original el valor 2, ya que
+respecto a la altura, la primer y última fila de píxeles no van a ser tomadas en cuenta.
+En el caso del ancho, lo que se hace es tomar dos registros, donde uno va a ser el encargado
+de guardar el ancho original de la matriz, y el segundo va a tener el ancho sobre el
+que efectivamente se va a operar. Este último será dividido por 2 (porque se procesarán 2 píxeles en cada iteración) y luego restado uno a este
+último resultado, ya que hay 2 píxeles que no van a ser iterados, que son los de los bordes izquierdo y derecho.
+\\
+\\
+$\hspace*{2cm}$Representación de las posiciones sobre las que no se aplica el filtro
+			\\
+			\\
+		$\hspace*{4cm}$$|$ X $|$ \ \ X  \ \ $|$ \ \ X \ \  $|$ \ \ X \ \  $|$ \ \ X \ \  $|$ \ \ X \ \  $|$ \ \ X \ \  $|$ \ \ X \  $|$ X $|$$\\$
+		$\hspace*{4cm}$$|$ X $|$ p11 $|$ p12 $|$ p13 $|$ p14 $|$ p15 $|$ p16 $|$ p17 $|$ X $|$$\\$
+		$\hspace*{4cm}$$|$ X $|$ p21 $|$ p22 $|$ p23 $|$ p24 $|$ p25 $|$ p26 $|$ p27 $|$ X $|$$\\$
+		$\hspace*{4cm}$$|$ X $|$ p31 $|$ p32 $|$ p33 $|$ p34 $|$ p35 $|$ p36 $|$ p37 $|$ X $|$$\\$
+		$\hspace*{4cm}$$|$ X $|$ \ \ X \ \  $|$ \ \ X \ \  $|$ \ \ X \ \  $|$ \ \ X \ \  $|$ \ \ X \ \  $|$ \ \ X \ \  $|$ \ \ X \  $|$ X $|$
+				\\
+				\\
+				\par Luego de toda esta operatoria, pero antes de aplicar el ciclo del filtro, se deben poner en blanco la fila superior de la imagen
+				destino, lo cual se logra con un pequeño loop
+				donde se toma una máscara (una secuencia de 128 bits seteados en 1, definida en la sección
+				rodata) y es utilizada para iterar sobre todos los píxeles de la primer fila y setear sus valores en 255, es decir, color blanco.
+				Es posible iterar de a 4 píxeles ya que se tiene la garantía
+				(por lo indicado por la cátedra) que el ancho de la matriz es máltiplo de 4, por lo que
+				siempre entrarán los 16 bytes que se insertan en esas posiciones de la matriz.
+
+
+				\par Hecho esto, se actualizan las direcciones a las que apuntan los registros de origen y destino para que pasen a apuntar
+				a las posiciones (1, 1) de sus respectivas matrices y se carga en xmm14 el valor de una máscara que será utilizada para mantener el valor inicial de las
+				componentes de transparencia de los diferentes píxeles.
+				\\
+				\\
+			$\hspace*{5.5cm}$$|$ X $|$ \ \ X  \ \ $|$ \ \ X \ \  $|$ \ \ X \ \  $|$ \ \ X \ \  $|$...$\\$
+		$\hspace*{5.5cm}$$|$ X $|$ p11 $|$ p12 $|$ p13 $|$ p14 $|$...$\\$
+				$\hspace*{6.4cm}$$\uparrow$
+							\\
+							\par En este momento se ingresa por primera vez al ciclo de filas ($rowLoop$), que es el encargado
+							de
+							\begin{itemize}
+								\item resetear el contador de las columnas por las que se itera
+								\item de controlar que se opere
+								      sobre todas las filas necesarias, sin excederse ni acceder a memoria que no le pertenece al programa
+								\item setear el primer y último píxel en blanco
+							\end{itemize}.
+
+							\par Para llevar a cabo esto, se guarda en un registro el contador de columnas a recorrer, se setea el primer píxel en blanco, y se ingresa al
+							loop de columnas, que va a ser el encargado de realizar las operaciones de diferencia
+							vertical y horizontal sobre los píxeles de la matriz.
+
+							\par Es necesario usar un registro xmm para acumular los resultados de estas operaciones, por lo que éste se inicializa con el valor del
+							registro xmm14 (la máscara para los valores alpha de cada píxel), para asegurar que la componente $a$ de cada píxel tendrá el valor 255, tal como pide la consigna.
+
+							\par Se decidió operar sobre 2 píxeles en simultáneo ya que, al descartar el primer y último píxel de cada fila, ya no se cuenta con la certeza de que
+							la cantidad de píxeles a procesar por fila es múltiplo de 4, por lo que no es posible ir avanzando y operando de a 4 píxeles por iteración.
+
+							\par Luego se levantan los valores de cada una de las componentes de los 2 píxeles (bgra) extendidas de 8 bits a 16 para evitar
+							una posible perdida de precisión, y se utilizan 2 registros xmm para almacenar los valores de 2 pares de píxeles: en el
+							primero, los dos píxeles superiores izquierdos a donde se pretende aplicar el filtro; y en el segundo los inferiores izquierdos.
+							\\
+							\\
+						$\hspace*{5.5cm}$$|$ p00 $|$ p01 $|$ p02 $|$ p03 $|$ p04 $|$...$\\$
+				$\hspace*{5.5cm}$$|$ p10 $|$ p11 $|$ p12 $|$ p13 $|$ p14 $|$...$\\$
+		$\hspace*{6.7cm}$$\uparrow$$\hspace*{0.8cm}$$\uparrow$$\\$$\\$
+$\hspace*{5.5cm}$$\Rightarrow$ xmm0$=$$|$ p00 $|$ p01 $|$$\\$
+$\hspace*{5.5cm}$$\Rightarrow$ xmm1$=$$|$ p20 $|$ p21 $|$$\\$
+
+\par A estos valores, se les aplica la resta componente a componente (los 16 bits de la
+componente b del primero contra los de la componente b del segundo, y lo mismo con los demás) y luego, a cada uno de estos valores
+resultantes, se le toma el valor absoluto. De esta manera, tenemos en el primer registro el resultado del cálculo:\\
+$\hspace*{2.5cm}$xmm0 $=|\ $$abs(p00(bgra) - p20(bgra))$$\ | \ $$abs(p01(bgra) - p21(bgra))$$\ |$
+
+	\par Estos valores son sumados al registro acumulador definido anteriormente.
+	Notar que al hacer esto ocurren 2 cosas: primero, el resultado del cálculo está
+	dividido para los dos píxeles que que se pretenden procesar, es decir, fue posible el cálculo
+	necesario para 2 píxeles en solamente una aplicación de las instrucciones. Y segundo,
+	se mantienen los valores de la componente alpha, porque la resta entre las componentes alpha
+	de los píxeles procesados da 0 ya que son todas iguales, por lo que mantiene el valor que venía del primer seteo sobre el acumulador.
+
+	\par En la próxima serie de instrucciones (2 repeticiones más de la diferencia vertical), se ejecuta el
+	mismo código pero cambiando los pares de píxeles que se guardan en los registros xmm:
+	los píxeles directamente superiores e inferiores a los píxeles (1, 1) y (1, 2) y por último los píxeles superiores e inferiores
+	derechos en cada uno de los bloques de instrucciones respectivos.
+	\\
+	\\
+$\hspace*{1.5cm}$$|$ p00 $|$ p01 $|$ p02 $|$ p03 $|$ p04 $|$...$\\$
+$\hspace*{1.5cm}$$|$ p10 $|$ p11 $|$ p12 $|$ p13 $|$ p14 $|$...$\\$
+$\hspace*{2.7cm}$$\uparrow$$\hspace*{0.8cm}$$\uparrow$$\\$$\\$
+En el segundo bloque de código:\\
+$\hspace*{1.5cm}$$\Rightarrow$ xmm0$=$$|$ p01 $|$ p02 $|$$\\$
+$\hspace*{1.5cm}$$\Rightarrow$ xmm1$=$$|$ p21 $|$ p22 $|$$\\$
+En el tercer bloque de código:\\
+$\hspace*{1.5cm}$$\Rightarrow$ xmm0$=$$|$ p02 $|$ p03 $|$$\\$
+$\hspace*{1.5cm}$$\Rightarrow$ xmm1$=$$|$ p22 $|$ p23 $|$$\\$
+
+\par Una vez terminada la ejecución de la diferencia vertical de esta iteración, se comienza con la diferencia horizontal. A diferencia del 
+cálculo vertical, en este caso las direcciones de memoria a las que se deben acceder por cada bloque de código pertenecen a la misma fila.
+Siguiendo con el ejemplo del filtro para los píxeles (1, 1) y (1, 2), los registros
+por cada bloque de código quedan de la siguiente manera:
+\\
+\\
+		$\hspace*{1.5cm}$$|$ p00 $|$ p01 $|$ p02 $|$ p03 $|$ p04 $|$...$\\$
+				$\hspace*{1.5cm}$$|$ p10 $|$ p11 $|$ p12 $|$ p13 $|$ p14 $|$...$\\$
+						$\hspace*{2.7cm}$$\uparrow$$\hspace*{0.8cm}$$\uparrow$$\\$
+							En el primer bloque de código:\\
+						$\hspace*{1.5cm}$$\Rightarrow$ xmm0$=$$|$ p00 $|$ p01 $|$$\\$
+				$\hspace*{1.5cm}$$\Rightarrow$ xmm1$=$$|$ p02 $|$ p03 $|$$\\$
+			En el segundo bloque de código:\\
+		$\hspace*{1.5cm}$$\Rightarrow$ xmm0$=$$|$ p10 $|$ p11 $|$$\\$
+$\hspace*{1.5cm}$$\Rightarrow$ xmm1$=$$|$ p12 $|$ p13 $|$$\\$
+	En el tercer bloque de código:\\
+	$\hspace*{1.5cm}$$\Rightarrow$ xmm0$=$$|$ p20 $|$ p21 $|$$\\$
+			$\hspace*{1.5cm}$$\Rightarrow$ xmm1$=$$|$ p22 $|$ p23 $|$$\\$
+\\
+Y respectivamente, las operaciones quedan:\\
+En el primer bloque de código:
+$abs(|px00|px01| - |px02|px03|)$\\
+En el segundo bloque de código:
+$abs(|px10|px11| - |px12|px13|)$\\
+En el tercer bloque de código:
+$abs(|px20|px21| - |px22|px23|)$
+\\
+\\
+\par Nótese también que en el caso anterior no se tomaba el valor de los píxeles (1, 1) y (1, 2)
+para el cálculo de la diferencia, pero en este caso es necesario tomar el de (1, 1) para
+poder aplicar el filtro al (1, 2). Las instrucciones utilizadas son exactamente las mismas que se usaron para la diferencia
+vertical, así como las sumas al registro acumulador.
+
+\par De esta manera, ya quedan en xmm8 (registro acumulador) los valores correspondientes
+a cada uno de los píxeles a los que se debía aplicar el filtro, pero aún hay 2 problemas:
+\begin{itemize}
+	\item los valores de cada componente de los píxeles estan expresados en 16 bits, cuando los píxeles almacenan
+			valores de 8 bits
+	\item estos valores pueden haber excedido la representación no signada de los valores de colores (el rango de valores que
+			necesitamos para representar los valores es un rango no signado de numeros entre el 0 y
+			el 255 en representación decimal, pero pueden haberse excedido de esta representación
+			luego de las diferentes operaciones aplicadas)
+\end{itemize}
+
+\par Para resolver estos problemas, se utilizó una instrucción de empaquetado provista por el set de instrucciones de SSE, que trata a ambos: 
+empaqueta valores de 16 bits a en valores de 8 bits, y además nos devuelve una saturación no signada (si fuera signada, el rango de saturación no sería
+de 0 a 255 sino de -128 a 127, que no es lo que queremos para representar colores).
+\par Una vez empaquetados los valores, quedan almacenados en la parte baja de mi registro
+acumulador, por lo que se usa una operación para mover qwords (son 8 valores de 8 bits) y ponerlo
+en su posicion dentro de la matriz de destino.
+\\
+$\hspace*{5cm}$$Matriz \ Destino \ actual $$\\$
+$\hspace*{3.5cm}$$|$ 255 $|$ \ \ \ \ \ \ \ 255 \ \ \ \ \ \ \ $|$ \ \ \ \ \ \ \ 255 \ \ \ \ \ \ \ $|$ 255 $|$ 255 $|$...$\\$
+$\hspace*{3.5cm}$$|$ 255 $|$ filtered(p11) $|$ filtered(p12) $|$ \ \ ? \ \ $|$ \ \ ? \ \ $|$...$\\$
+$\hspace*{5.5cm}$$\uparrow$$\hspace*{2cm}$$\uparrow$
+
+\par A esta altura, los píxeles (1, 1) y (1, 2) ya se encuentran con los valores del filtro aplicados, pero
+todavia falta terminar la iteración para que lo mismo funcione para el resto de píxeles.
+Entonces, se avanzan los punteros usados para acceder a las posiciones de memoria de las
+matrices de origen y destino en 8 bytes, para que tomen el próximo par de columnas.
+Luego de esto, se decrementa el contador de columnas y se efectúa un salto condicional (porque la
+operación de decremento ya actualiza los flags acorde a su resultado) para decidir si
+se vuelve a ciclar sobre las columnas, o habría que pasar a la próxima fila.
+
+\par En este caso corresponde volver a ejecutar el ciclo de las columnas, corrido a los 2
+píxeles que siguen, pero se explicarán 2 casos mas:
+\begin{itemize}
+\item el caso donde hay que avanzar a la próxima fila
+\item el caso donde ya se terminaron las filas y las columnas
+\end{itemize}
+$\rightarrow$ En el primero de estos, el contador de columnas habrá quedado en 0,
+por lo que pasará a setear el último píxel de la fila (el píxel de la última columna de
+la fila sobre la que estaba iterando) en blanco. También avanzaría los punteros hasta la
+columna 1 de la fila siguiente para dejarlos preparados para la próxima ejecución
+del ciclo de filas. Finalmente, decrementaría el contador de filas, y si aún quedan filas
+por recorrer, saltaría al ciclo de filas, reseteando el contador de columnas y poniendo el
+primer píxel de la nueva fila en blanco.\\
+$\rightarrow$ En el caso donde ya se recorrió la última fila entera, ocurrirá lo que fue comentado
+antes, pero en vez de saltar de nuevo al ciclo de las filas, pasaría a ejecutar un último
+ciclo donde se setea la última fila de la matriz destino en blanco, tal y como lo hizo antes
+de empezar a ejecutar el primer ciclo de filas.
+\newpage
+Representación de la matrix destino finalizada
+\\
+\\
+$\hspace*{1.5cm}$$|$ 255 $|$ \ \ 255 \ \ $|$ \ \ 255 \ \ $|$ \ \ 255 \ \ $|$ \ \ 255 \ \ $|$ \ \ 255 \ \ $|$ \ \ 255 \ \ $|$ \ \ 255 \ \ $|$ 255 $|$$\\$
+$\hspace*{1.5cm}$$|$ 255 $|$ f(p11) $|$ f(p12) $|$ f(p13) $|$ f(p14) $|$ f(p15) $|$ f(p16) $|$ f(p17) $|$ 255 $|$$\\$
+$\hspace*{1.5cm}$$|$ 255 $|$ f(p21) $|$ f(p22) $|$ f(p23) $|$ f(p24) $|$ f(p25) $|$ f(p26) $|$ f(p27) $|$ 255 $|$$\\$
+$\hspace*{1.5cm}$$|$ 255 $|$ f(p31) $|$ f(p32) $|$ f(p33) $|$ f(p34) $|$ f(p35) $|$ f(p36) $|$ f(p37) $|$ 255 $|$$\\$
+$\hspace*{1.5cm}$$|$ 255 $|$ \ \ 255 \ \ $|$ \ \ 255 \ \ $|$ \ \ 255 \ \ $|$ \ \ 255 \ \ $|$ \ \ 255 \ \ $|$ \ \ 255 \ \ $|$ \ \ 255 \ \ $|$ 255 $|$
+\\
+
+\par Es evidente que la técnica utilizada para desarrollar este filtro fue la de $operatoria \
+con \ kernel$, tomando 2 kernels (que no fueron aplicados estrictamente como se vio en la clase),
+pero que tienen la siguiente forma:$\\$
+$\hspace*{1.5cm}$__________$\hspace*{3cm}$$\hspace*{1.7cm}$__________$\\$
+Kernel 1: $|$ 1$|$ 1$|$ 1$|$ $\hspace*{3cm}$Kernel 2: $|$ 1$|$ 0$|$ -1$|$ $\\$
+$\hspace*{1.5cm}$$|$ 0$|$ 0$|$ 0$|$ $\hspace*{3cm}$$\hspace*{1.47cm}$$|$ 1$|$ 0$|$ -1$|$ $\\$
+$\hspace*{1.5cm}$$|$-1$|$-1$|$-1$|$ $\hspace*{3cm}$$\hspace*{1.43cm}$$|$ 1$|$ 0$|$ -1$|$ $\\$
+$\hspace*{1.5cm}$__________$\hspace*{3cm}$$\hspace*{1.7cm}$__________$\\$

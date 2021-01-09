@@ -1,0 +1,39 @@
+Este es un archivo escrito en código de máquina, aquí definimos las rutinas de atención a interrupciones que son indicadas desde los descriptores de la IDT
+Así como también definimos las rutinas de atención a excepciones (que también se definen en la IDT).
+\\\\
+El archivo se divide en 3 partes distintas donde se definen e implementan distintas rutinas.
+Primero vemos la definición de 2 macros, \emph{ISR_CON_ERROR_CODE e ISR} las cuales definen la rutina de atención a las excepciones.
+La primera es utilizada para definir la rutina a excepciones que devuelven un errorCode en la pila a la hora de cambiar el stack por uno de privilegio 0.
+La segunda es utilizada para definir la rutina de excpeción que no utiliza ningún tipo de errorCode, por lo que la estructura de la pila que queda es distinta.
+\\\\
+La única diferencia entre ambas macros es la primera instrucción donde en la utilizada para excepciones con errorCode pasamos el valor ubicado en la posición a la que apunta ESP que, como la documentación de Intel 
+indica, es donde se encuentra el errorCode.
+\\
+El resto de la implementación de las macros es exactamente igual. Basado en la variable global de modo_debug decidimos si imprimir o no la excepción en pantalla pasando por la pila como párametro
+todos los registros e información a mostrar. De no tener el modo debug activo salteamos este call a imprimir_excepción y pasamos a desalojar la tarea que generó la excepción.
+En la etiqueta error_enable se encuentra un byte que indica si hubo una excepción y luego utilizar esta información para parar la ejecución del scheduler.
+\\\\
+En la segunda parte del archivo vemos las rutinas de atención a las interrupciones de teclado y clock.
+La rutina de interrupción de reloj primero chequea si error_enable esta en 1, como dijimos anteriormente. En caso de estarlo, detiene cualquier tipo de switch de tarea.
+Luego tenemos dos calls, uno para actualizar el reloj de abajo a la derecha y otro para actualizar el reloj que se encuentra debajo del índice de la tarea que se está ejecutando para
+ser capaces de ver el funcionamiento y el cambio de tarea sin necesidad de utilizar breakpoints.
+\\
+Después de esto chequeamos si el juego finalizó, y de ser así, imprimimos un mensaje en pantalla indicando el resultado del juego y dejamos el juego en un while infinito.
+\\
+Luego, en caso de que el juego no haya terminado aún, buscamos qué tarea es la próxima a ejecutarse utilizando sched_next_task, verificamos que la tarea devuelta no sea la actual. En caso de cumplirse las
+condiciones, cargamos el selector de segmento que apunta al descriptor de TSS dentro de la GDT para de esta forma producir el task switch.
+\\
+La rutina de interrupción de teclado solo se preocupa por una cosa: una vez cargado en AL lo que se encuentro en el puerto 0x60, chequeamos si lo que fue apretado fue una "Y".
+En caso de haber presionada dicha tecla y estar en modo_debug, ejecutamos restaurar pantalla (esta función solo restaura la pantalla en caso de que haya habido una excepción, sino no hará nada)
+y desactivamos el error_enable.
+\\
+Si no se encontraba el modo_debug activo, lo activaremos.
+\\\\
+Por último, en el archivo tenemos las rutinas de atención a las syscalls que pueden producir las diferentes tareas. No nos detendremos a explicar qué hace cada una ya que éstas
+se encuentran implementadas en game.c y aquí solo nos encargamos de atender la interrupción correctamenete, preservar todos los registros y pasar los parametros a la función de C que
+se encargara de ejecutar la lógica.
+\\
+Como añadido, en este archivo decidimos implementar el backtrace, el cual se encuentra en el final del mismo. Esta rutina toma dos parámetros: el primero es un puntero a un arreglo donde se deben guardar 
+las direcciones que vamos encontrando. El segundo parámetro es el valor que tenía el registro ebp cuando se empezó a ejecutar el handler de excepción. El algoritmo va buscando el base pointer anterior a donde
+está parado y también obtiene la return address asociada a ese stackframe y la guarda en el arreglo de salida. Esto se repite un máximo de 5 veces, pero corta si el base pointer es nulo, no es múltiplo de 4, o 
+si está fuera del rango del código de los jugadores.

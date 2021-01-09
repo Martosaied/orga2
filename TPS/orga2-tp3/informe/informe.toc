@@ -1,0 +1,12 @@
+\babel@toc {spanish}{}
+\contentsline {section}{\numberline {1}Introducción}{3}%
+\contentsline {section}{\numberline {2}Kernel}{3}%
+\contentsline {section}{\numberline {3}MMU}{3}%
+\contentsline {section}{\numberline {4}Estructuras de datos del sistema}{4}%
+\contentsline {subsection}{\numberline {4.1}GDT y descriptores de segmento}{4}%
+\contentsline {subsection}{\numberline {4.2}IDT y descriptores de interrupciones}{5}%
+\contentsline {subsection}{\numberline {4.3}TSS}{5}%
+\contentsline {section}{\numberline {5}Scheduler}{6}%
+\contentsline {section}{\numberline {6}ISR}{7}%
+\contentsline {section}{\numberline {7}Game}{8}%
+\contentsline {section}{\numberline {8}Conclusión}{9}%

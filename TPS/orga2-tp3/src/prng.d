@@ -1,0 +1,1 @@
+prng.o: prng.c

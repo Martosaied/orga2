@@ -1,0 +1,216 @@
+----------------------------------------------------------------------------------------
+1. Explicar el diseño propuesto y su funcionamiento paso a paso. Implementar en ASM/C las
+rutinas registrar y regresar.
+----------------------------------------------------------------------------------------
+Para este ejercicio tomaremos la segurencia que nos da la consigna y tomaremos esta funcion a registrar como una tarea mas que el scheduler puede tener.
+Para esto empezaremos definiendo en la GDT una entrada para la TSS de esta "tarea" con el indice 19.
+
+La TSS de esta tarea estara definida junto con las demas TSS del sistema pero sin completar el campo del EIP ni ESP. Mas adelante detallo como esta TSS estara definida.
+Vamos a crear un struct parecido al task_info que solo contendra el selector de segmento de la TSS, la tss y un flag para saber si hay una funcion registrada o no(activa).
+Vamos a crear 1 variable global nueva junto con un nuevo struct:
+
+#define GDT_INDEX_TSS_FUNCION (19)
+
+task_info_new function_task = {
+    .selector_tss = (GDT_INDEX_TSS_FUNCION << 3) | GDT_RPL_RING_0,
+    .tss = function_task_tss
+    .activa = 0
+}
+
+typedef struct str_task_info_new {
+    int16_t selector_tss;
+    tss_t tss;
+    uint8_t activa; 
+} __attribute__((__packed__)) task_info_new;
+
+tss_t function_task_tss = {
+    .ss = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .ds = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .es = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .fs = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .gs = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .cs = GDT_OFF_CS_RING_3 | GDT_RPL_RING_3,
+    .cr3 = 0
+    .eip = 0,
+    .ebp = 0,
+    .esp = 0,
+    .esp0 = mmu_next_free_kernel_page() + 0x1000,
+    .eflags = EFLAGS_DEFAULT_VALUE,
+    .iomap = TSS_IOMAP_ALL_PORTS_DISABLED,
+    .ss0 = GDT_OFF_DS_RING_0 | GDT_RPL_RING_0,
+};
+gdt_entry_t gdt[GDT_COUNT] = {
+    ...
+    [19] = {
+        .limit_15_0 = sizeof(tss_t) - 1,
+        .base_15_0 = 0x000,
+        .base_23_16 = 0x0,
+        .type = GDT_TSS_32_BITS_TYPE, //data, read/write  (el valor es 0x09 = 1001)
+        .s = 0x0,                     //system
+        .dpl = 0x00,
+        .p = 0x1, //esta presente
+        .limit_19_16 = 0x00,
+        .avl = 0x0,
+        .l = 0x0, //32 bits
+        .db = 0x0,
+        .g = 0x0,
+        .base_31_24 = 0x00,
+    },
+}
+
+Este struct sera incializado junto con los anteriores y tendra activa = 0.
+Cuando una tarea quiera registrar una funcion, setearemos activa en 1 y tomaremos la tss para setear correctame el CR3, EIP, ESP, etc
+Mas adelante especificaremos la implementacion de registrar.
+
+La funcion nextTask antes de buscar la proxima tarea a ejecutar chequeara si el bit de activa en esta variable esta seteado en 1.
+Si lo esta, pasara a ejecutar esta tarea en lugar de las demas.
+
+// El nextTask tendria unos leves cambios 
+int16_t nextTask() {
+    if (function_task.activa == 1) {
+        return function_task.selector_tss;
+    }
+
+    while (tasks[actual_task].esperando_tecla == 1) {
+        actual_task = (actual_task + 1) % CANT_TAREAS;
+    }
+
+    // Actualizo la tarea actual y devuelvo su selector de tss
+    res = tasks[actual_task].selector_tss;
+    return res;
+}
+
+Luego de ejecutar esta funcion, se llamara a regresar donde seteamos "activa" en 0. 
+
+Para "registrar" y "regresar" utilizaremos dos syscalls nuevas, con sus entradas en la IDT
+Estas syscalls funcionaran de la siguiente manera:
+    registrar:  recibira el puntero al inicio de la funcion y seteara 1 en el bit de activo del struct de la function_task
+                setearemos como principio de la pila de nivel 3, la ultima direccion disponible del area de datos de la tarea, es decir 0x0540FA00.
+                Seteamos en la tss de la funcion el cr3 de la tarea y en el eip el puntero.
+    
+    regresar:   sin recibir ningun parametro loq ue haremos sera setear en 0 el bit de activo en el struct, liberar la pagina de memoria que reservamos para la pila de la funcion y desmapearla.
+                luego llamamos a nextTask para pasar a la siguiente tarea.
+
+
+Entradas de IDT
+90 (interrupcion de registrar):
+    - OFFSET: &_isr90
+    - SELECTOR: GDT_CODE_RING_0 << 3
+    - ATTR: 0xEE00 (DPL=3, P=1, D=1 (32bits))
+
+91 (interrupcion de regresar):
+    - OFFSET: &_isr91
+    - SELECTOR: GDT_CODE_RING_0 << 3
+    - ATTR: 0xEE00 (DPL=3, P=1, D=1 (32bits))
+
+Syscall registrar int 90
+
+     Parametros     |   Descripcion
+    in EAX=function |   puntero al inicio del codigo de la funcion a ejecutar
+
+
+Syscall regresar int 91
+
+     Parametros     |   Descripcion
+    no recibe parametros
+
+
+extern regresar
+extern registrar
+
+global _isr90
+_isr90:
+    pushad
+
+    push eax
+    call registrar
+
+    .fin:
+    popad
+    iret
+
+global _isr91
+_isr91:
+    pushad
+
+    call regresar
+    call nextTask
+
+    ;Chequeo que la tarea actual no sea la misma que la siguiente
+    str cx
+    cmp ax, cx
+    je .fin
+    mov [selector], ax
+    jmp far [offset]
+
+    .fin:
+    popad
+    iret
+
+#define STACK_START (0x0540FA00)
+
+void registrar(uint32_t *code) {
+    function_task.activa = 1;
+    tss function_task_tss = function_task.tss;
+
+    vaddr_t pages_amount = tasks[actual_task].pages_amount;
+    paddr_t phy = kMallocPage();
+    mmu_map_page(array_tss[actual_task].cr3, STACK_START - 0x1000, phy, 1, 1); // Mapeo la ultima pagina disponible del area de datos de la tarea 
+    
+    function_task_tss->cr3 = array_tss[actual_task].cr3;
+    function_task_tss->eip = code;
+    function_task_tss->esp = STACK_START; // Para la pila de nivel 3 le dejamos desde el final de dicha pagina
+}
+
+void regresar() {
+    function_task.activa = 0;    
+    kFreePage(STACK_START - 0x1000);
+    mmu_unmap_page(array_tss[actual_task].cr3, STACK_START - 0x1000)
+}
+
+---------------------------------------------------------------------------------------------------
+2. Presentar un ejemplo de una tarea y una función para ser registrada. La tarea no debe hacer
+nada, es decir ciclar infinitamente, mientras que la función a ser registrada debe incrementar un
+contador global y retornar. Implementar en ASM/C el código pedido.
+---------------------------------------------------------------------------------------------------
+/*
+ * Syscalls
+ */
+
+LS_INLINE uint32_t syscall_registrar(int32_t *code) {
+  int32_t ret;
+  __asm__ volatile("int $90"  /* make the request to the OS */
+                   : "a"(code),   /* pass in eax ("a") arg "x"*/
+                   : "memory",
+                     "cc"); /* announce to the compiler that the memory and
+                               condition codes have been modified */
+    return ret;
+}
+
+LS_INLINE uint32_t syscall_regresar(int32_t *code) {
+  int32_t ret;
+  __asm__ volatile("int $91"  /* make the request to the OS */
+                   :
+                   :
+                   : "memory",
+                     "cc"); /* announce to the compiler that the memory and
+                               condition codes have been modified */
+    return ret;
+}
+
+uint32_t contador = 0;
+
+void task_A(void)
+{
+  syscall_registrar((uint32_t)&function);
+  while (1)
+  {
+    __asm volatile("nop");
+  }
+}
+
+void function(void)
+{
+    contador++;
+    syscall_regresar(); //Como precondicion asumo que todas las funciones que se le pasan a la syscall registrar, deben terminar con la syscall de regresar.
+}

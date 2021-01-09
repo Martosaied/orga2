@@ -1,0 +1,32 @@
+La GDT (Global Descriptor Table) es la estructura de datos que utiliza el sistema para cargar los descriptores de segmentos que organizaran la memoria en ese primer nivel.
+Así como también contiene los descriptores de TSS que indican dónde se encuentran dichos TSS.
+\\\\
+Primero, los descriptores de segmento: \\
+Los descriptores de segmento son parte de la unidad de segmentación, que se utiliza para traducir una dirección lógica a una dirección lineal. Los descriptores de segmento describen el segmento de memoria al que se hace referencia en la dirección lógica.
+Al ser un sistema con segmentación flat con protección, utilizamos 4 segmentos los cuales mapean los primeros 201 MB de memoria cada uno (que haría del total de memoria del sistema).
+Estos 4 segmentos se dividen en 2 segmentos de código y 2 segmentos de datos.
+Otros campos del descriptor que vale la pena mencionar y se repiten en estos 4 segmentos son:
+\begin{itemize}
+   \item base_15_0 y base_23_16: Estos bits juntos representan la dirección en la que comienza dicho segmento, que para los nuestros están seteados en 0x0 ya que ocupan desde el principio de la memoria hasta el final(en nuestro caso 201MB)
+   \item limit_15_0 y limit_19_16: Estos indican el límite hasta el cual se extienden los segmentos. En nuestro caso esta seteado en 0xC900, el cual es efectivamente 201 MB
+   \item s: system, indica que no es una estructura de datos del sistema
+   \item g: granularity, indica con qué precisión se mide el límite del segmento, 1 byte o 4kb.
+   \item type: indica el tipo del segmento, los de código son de tipo code/execute y los de datos son data/read/write.
+   \item dpl: indica el nivel de privilegio requerido para acceder a dicho segmento. En nuestro caso poseemos 1 segmento de datos con DPL 0 y otro con DPL 3, mismo para los dos segmentos de código.
+\end{itemize}
+Utilizando estos segmentos somos capaces de dividir entre código Kernel ejecutado en nivel 0, el cual utiliza pilas de nivel 0 y ejecutar tambien código de usuario (tareas)
+las cuales utilizan los segmentos de nivel 3 tanto de datos como de código. Esto permite proteger al código, los datos y la pila del kernel de exponer información sensible
+mientras que a la vez reducimos al mínimo el uso de segmentación (aunque aún mantenemos un par más de segmentos para lograr esta protección)
+para apoyarnos fuertemente en la paginación como método de organización de memoria.
+\\\\
+En la GDT no solo guardamos estos descriptores de segmento sino que también guardamos descriptores de TSS.
+En gdt.c definimos de manera estática los descriptores de segmentos de las 22 TSS (2 para Rick y Morty y 20 para sus meeseeks) aunque sin sus direcciones bases (estas son completadas en el tss_init dentro de tss.c).
+Todos estos descriptores de TSS son de DPL 0, evitando así que la tarea sea capaz de modificar su propio TSS o saltar de una tarea a otra sin pasar por el Scheduler.
+
+Por último vale la pena aclarar algunos descriptores específicos que fueron completados como decía la consigna
+\begin{itemize}
+   \item El descriptor de segmento de video
+   \item El descriptor de TSS de la tarea INIT y de la tarea IDLE. El primero nos indica dónde se encuentra la tss de la tarea INIT necesaria para el mecanismo de conmutación de tareas de intel  y el segundo nos dice donde se encontrará la TSS de esta tarea que usaremos siempre que el procesador no tenga ninguna otra tarea que procesar.
+   \item El descriptor nulo en la posición 0
+\end{itemize}
+

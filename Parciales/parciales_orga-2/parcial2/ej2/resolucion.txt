@@ -1,0 +1,632 @@
+--------------------------------------------------------------------------------------------------
+2. Implementar en ASM/C la rutina de atención de interrupciones del reloj. Explicar su funcionamiento.
+--------------------------------------------------------------------------------------------------
+Un par de asunciones que doy por hechas que el sistema deberia tener para poder ejecutar estas rutinas.
+Dado que es usamos segmentacion flat, necesitamos 4 descriptores de segmento, 2 de codigo(uno de nivel 0 otro de nivel 3) y lo mismo para los 2 segmentos de datos.
+Tambien tengo que tener en la GDT los descriptores de TSS de la tarea inicial(para activar el mecanismo de conmutacion de tareas) asi como tambien para las 4 tareas a ejecutar.
+Obviamente debo tener esas TSS definidas en algun lugar del codigo
+
+Para manejar las interrupciones necesito una IDT con sus descriptores(en especifico ademas de las excpeciones, 1 para la interrupcion de reloj)
+
+Asumo que dentro del area del kernel tengo el PD y las PT de cada tarea asi como las pilas de nivel 0.
+Un par de cosas para aclarar sobre las TSS(definidas abajo). Esas TSS son las definidas de manera estatica
+Luego en tss_init, de manera dinmica setearia correctamente los campos base_15_0, base_23_16 y base_31_24 con las referencias a sus TSS.
+Setearia CR3 inicializando el mapa de memoria de la tarea con mmu_init_task_dir(X_PHYSICAL_ADDR, X_CODE_START)
+Donde X es una letra de la A a la D y esas direcciones son las indicadas en el grafico adjunto con la respuesta
+Por ultimo para esp0 pediria una nueva pagina del kernel (mmu_next_free_kernel_page()) y guardaria la ultima posicion de la misma (mmu_next_free_kernel_page() + 0x1000)
+
+Codigo ASM
+    extern activar_desactivar_tarea
+    extern pic_finish1
+    extern nextTask
+    offset: dd 0
+    selector: dw 0
+
+    ; Rutina de reloj
+    global _isr33
+    _isr32:
+        pushad
+        call pic_finish1
+        call nextTask
+
+        ;Chequeo que la tarea actual no sea la misma que la siguiente
+        str cx
+        cmp ax, cx
+        je .fin
+        mov [selector], ax
+        jmp far [offset]
+
+    .fin:
+        popad
+        iret
+
+
+Codigo C
+
+//Estructura que indica el selector de dicha tarea.
+typedef struct str_task_info {
+    int16_t selector_tss;
+    uint32_t pages_amount;
+} __attribute__((__packed__)) task_info;
+
+//Las tareas estan cargadas en orden A, B, C, D en cada uno de los arreglos.
+#define CANT_TAREAS 4
+#define virt_data_start 0x0500FA00;
+#define virt_code_start 0x05000000;
+#define virt_stack_start 0x0540FA00;
+
+tss array_tss[CANT_TAREAS];
+task_info tasks[CANT_TAREAS];
+int actual_task = 0;
+
+task_info tasks[CANT_TAREAS] = { 
+  [0] = {
+    .selector_tss = (GDT_INDEX_TSS_A << 3) | GDT_RPL_RING_0,
+    .pages_amount = 0,
+  },
+  [1] = {
+    .selector_tss = (GDT_INDEX_TSS_B << 3) | GDT_RPL_RING_0,
+    .pages_amount = 0,
+  },
+  [2] = {
+    .selector_tss = (GDT_INDEX_TSS_C << 3) | GDT_RPL_RING_0,
+    .pages_amount = 0,
+  },
+  [3] = {
+    .selector_tss = (GDT_INDEX_TSS_D << 3) | GDT_RPL_RING_0,
+    .pages_amount = 0,
+  },
+};
+
+int16_t nextTask() {
+
+    actual_task = (actual_task + 1) % CANT_TAREAS;
+
+    // Actualizo la tarea actual y devuelvo su selector de tss
+    res = tasks[actual_task].selector_tss;
+    return res;
+}
+
+0x20 (interrupcion de reloj):
+    - OFFSET: &_isr32
+    - SELECTOR: GDT_CODE_RING_0 << 3
+    - ATTR: 0x8E00 (DPL=0, P=1, D=1 (32bits))
+
+--------------------------------------------------------------------------------------------------
+3. Diseñar el funcionamiento de los servicios pedidos. Indicar que registros toman como parámetro
+y como retorna los resultados.
+--------------------------------------------------------------------------------------------------
+Para implementar estos servicios utilizaremos syscalls. Agregaremos entradas(como se detalla abajo) a la IDT para generar 
+interrupciones para las mismas. 
+En el ejercicio 3.4 especifico la forma y como estaran seteadas las entradas en la IDT corredpondientes a las syscalls que crearemos. 
+
+Syscall SetDataLimit int 88
+   
+     Parametros     |   Descripcion
+    in EAX=pages    |   Cantidad de paginas que debe tener el area de datos de la tarea que llamo a la syscall
+
+Syscall ReadData int 89
+   
+     Parametros       |   Descripcion
+    in  EAX=letra     |   char que representa la tarea de la cual se quiere leer
+    in  EBX=offset    |   offset del byte al que se quiere acceder en el area de datos de la tarea
+    out ECX=data      |   byte leido, puntero donde se pondra la data del byte leido
+    out EDX=es_valido |   puntero donde se guardara el flag que indica que si el byte leido es valido no
+
+--------------------------------------------------------------------------------------------------
+4. Implementar en ASM/C las rutinas de atención de los servicios del sistema. Indicar cómo com-
+pletaría las entradas en la IDT para SetDataLimit y ReadData.
+--------------------------------------------------------------------------------------------------
+
+Entradas de IDT
+88 (interrupcion de SetDataLimit):
+    - OFFSET: &_isr88
+    - SELECTOR: GDT_CODE_RING_0 << 3
+    - ATTR: 0xEE00 (DPL=3, P=1, D=1 (32bits))
+
+89 (interrupcion de ReadData):
+    - OFFSET: &_isr89
+    - SELECTOR: GDT_CODE_RING_0 << 3
+    - ATTR: 0xEE00 (DPL=3, P=1, D=1 (32bits))
+
+_isr88:
+        pushad
+
+        push eax
+        call set_data_limit
+
+        popad
+        iret
+
+_isr89:
+        pushad
+
+        push edx
+        push ecx
+        push ebx
+        push eax
+
+        call read_data
+
+        add esp, 32
+
+        popad
+        iret
+
+void set_data_limit(uint32_t pages) {
+    uint32_t actual_amount_pages = tasks[actual_task].pages_amount;
+    int32_t pages_diff = pages - actual_amount_pages;
+    
+    if (pages > 1024) {
+        pages = 1024; // Si se piden mas de 1024 paginas se setea a mano el maximo a 4MB
+    }
+
+    if (pages_diff < 0) {
+        while(pages_diff < 0) {
+            mmu_unmap_page(rcr3(), virt_data_start + ((actual_amount_pages + pages_diff) * 0x1000) );
+            pages_diff += 1;
+        }
+    }
+
+    if (pages_diff > 0) {
+        while(pages_diff > 0) {
+            paddr_t phy = kMallocPage();
+            mmu_map_page(rcr3(), virt_data_start + ((actual_amount_pages + pages_diff) * 0x1000), phy, 1, 1);
+            pages_diff -= 1;
+        }
+    }
+
+    tasks[actual_task].pages_amount = pages;
+}
+
+void read_data(char letra, uint32_t offset, uint32_t *data, uint8_t *es_valido) {
+    page_directory_entry cr3_lectura;
+    uint32_t pages_amount;
+    if (letra == 'A') {
+        cr3_lectura = array_tss[0]->cr3;
+        pages_amount = tasks[0]->pages_amount;
+    } else if (letra == 'B') {
+        cr3_lectura = array_tss[1]->cr3;
+        pages_amount = tasks[1]->pages_amount;
+    } else if (letra == 'C') {
+        cr3_lectura = array_tss[2]->cr3;
+        pages_amount = tasks[2]->pages_amount;
+    } else if (letra == 'D') {
+        cr3_lectura = array_tss[3]->cr3;
+        pages_amount = tasks[3]->pages_amount;
+    } else {
+        *es_valido = 0;
+        *data = 0x00000000;
+    }
+
+    vaddr_t virt_to_read = virt_data_start + offset;
+    *es_valido = 0;
+
+    if (offset <= pages_amount * 0x1000) {
+        *es_valido = 1;
+    }
+    if (es_valido === 1) {
+        uint32_t viejo_cr3 = rcr3();
+        lcr3(cr3_lectura);
+        uint32_t *data = *virt_to_read;
+        lcr3(viejo_cr3);
+    } else {
+        *data = 0x00000000;
+    }
+}
+
+#define INICIO_DE_PAGINAS_LIBRES 0x100000
+uint32_t proxima_pagina_libre = INICIO_DE_PAGINAS_LIBRES;
+uint32_t mmu_next_free_kernel_page(void) {
+  uint32_t pagina_libre = proxima_pagina_libre;
+  proxima_pagina_libre += 0x1000;
+  return pagina_libre;
+}
+
+void mmu_map_page(page_directory_entry *cr3, vaddr_t virt, paddr_t phy, uint8_t us, uint8_t rw) {
+  uint32_t directoryIdx = virt >> 22;
+  uint32_t tableIdx = (virt >> 12) & 0X3FF;
+
+  if (cr3[directoryIdx].present == 0)   {
+    paddr_t newPT = mmu_nextFreeKernelPage();
+    for (int i = 0; i < 1024; i++)     {
+      ((paddr_t *)newPT)[i] = 0;
+    }
+    cr3[directoryIdx].page_table_base = newPT >> 12;
+    cr3[directoryIdx].present = 1;
+    cr3[directoryIdx].user_supervisor = us;
+    cr3[directoryIdx].read_write = rw;
+  }
+
+  uint32_t PT = cr3[directoryIdx].page_table_base << 12;
+  ((page_table_entry *)PT)[tableIdx].physical_address_base = phy >> 12;
+  ((page_table_entry *)PT)[tableIdx].present = 1;
+  ((page_table_entry *)PT)[tableIdx].user_supervisor = us;
+  ((page_table_entry *)PT)[tableIdx].read_write = rw;
+  tlbflush();
+}
+
+void mmu_unmap_page(page_directory_entry *cr3, vaddr_t virt) {
+
+    uint32_t directoryIdx = virt >> 22;                                      //calculo el indice dentro del page directory
+    uint32_t tableIdx = (virt >> 12) & 0X3FF;                                //calculo el indice dentro de la page table
+    page_directory_entry PDE = cr3[directoryIdx];                            //calculo el puntero a la entrada del page directory
+    uint32_t PT = PDE.page_table_base << 12;                                 //calculo el puntero a la page table
+    ((page_table_entry *)PT)[tableIdx].present = 0;                          //le pongo el bit de presente en 0 a la entrada de la page table
+    
+    kFreePage(virt);
+    
+    tlbflush();
+}
+
+
+DEFINICIONES DE STRUCTS Y DEFINES
+---------------------------------------------------------------------
+Aqui defino exactamente los atributos de las entradas en la GDT y las TSS de las tareas asi como los structs usados anteriormente en el codigo
+#define GDT_INDEX_TSS_INIT (14)
+#define GDT_INDEX_TSS_A (15)
+#define GDT_INDEX_TSS_B (16)
+#define GDT_INDEX_TSS_C (17)
+#define GDT_INDEX_TSS_D (18)
+#define A_PHY_ADDRESS 0x410000
+#define B_PHY_ADDRESS 0x422000
+#define C_PHY_ADDRESS 0x433000
+#define D_PHY_ADDRESS 0x444000
+
+// Estas direcciones no se encuentran en el enunciado pero asumimos que el codigo de las tareas se encuentra en esas posiciones del kernel, cada una de 64KB
+#define A_CODE_START_ADDRESS 0x10000
+#define B_CODE_START_ADDRESS 0x20000
+#define C_CODE_START_ADDRESS 0x30000
+#define D_CODE_START_ADDRESS 0x40000
+
+#define GDT_RPL_RING_0 (0x0)
+#define GDT_CODE_RING_0 (10)
+
+gdt_entry_t gdt[GDT_COUNT] = {
+    /* Descriptor nulo*/
+    /* Offset = 0x00 */
+    [GDT_IDX_NULL_DESC] =
+        {
+            .limit_15_0 = 0x0000,
+            .base_15_0 = 0x0000,
+            .base_23_16 = 0x00,
+            .type = 0x0,
+            .s = 0x00,
+            .dpl = 0x00,
+            .p = 0x00,
+            .limit_19_16 = 0x00,
+            .avl = 0x0,
+            .l = 0x0,
+            .db = 0x1,
+            .g = 0x00,
+            .base_31_24 = 0x00,
+        },
+    [10] =
+        {
+            .limit_15_0 = 0xFFFF,
+            .base_15_0 = 0x0000,
+            .base_23_16 = 0x00,
+            .type = 0x8, //code, execute
+            .s = 0x1,    //data segmente (not system)
+            .dpl = 0x00,
+            .p = 0x1, //esta presente
+            .limit_19_16 = 0xFF,
+            .avl = 0x0,
+            .l = 0x0,  //32 bits
+            .db = 0x1, //32-bit code and data segments
+            .g = 0x1,
+            .base_31_24 = 0x00,
+        },
+    [11] =
+        {
+            .limit_15_0 = 0xFFFF,
+            .base_15_0 = 0x0000,
+            .base_23_16 = 0x00,
+            .type = 0x8, //code, execute
+            .s = 0x1,    //data segmente (not system)
+            .dpl = 0x03,
+            .p = 0x1, //esta presente
+            .limit_19_16 = 0xFF,
+            .avl = 0x0,
+            .l = 0x0,  //32 bits
+            .db = 0x1, //32-bit code and data segments
+            .g = 0x1,
+            .base_31_24 = 0x00,
+        },
+    [12] =
+        {
+            .limit_15_0 = 0xFFFF,
+            .base_15_0 = 0x0000,
+            .base_23_16 = 0x00,
+            .type = 0x2, //data, read/write
+            .s = 0x1,    //data segmente (not system)
+            .dpl = 0x00,
+            .p = 0x1, //esta presente
+            .limit_19_16 = 0xFF,
+            .avl = 0x0,
+            .l = 0x0,  //32 bits
+            .db = 0x1, //32-bit code and data segments
+            .g = 0x1,
+            .base_31_24 = 0x00,
+        },
+    [13] =
+        {
+            .limit_15_0 = 0xFFFF,
+            .base_15_0 = 0x0000,
+            .base_23_16 = 0x00,
+            .type = 0x2, //data, read/write
+            .s = 0x1,    //data segmente (not system)
+            .dpl = 0x03,
+            .p = 0x1, //esta presente
+            .limit_19_16 = 0xFF,
+            .avl = 0x0,
+            .l = 0x0,  //32 bits
+            .db = 0x1, //32-bit code and data segments
+            .g = 0x1,
+            .base_31_24 = 0x00,
+        },
+    [GDT_INDEX_TSS_INIT] = {
+        .limit_15_0 = sizeof(tss_t) - 1,
+        .base_15_0 = 0x000,
+        .base_23_16 = 0x0,
+        .type = GDT_TSS_32_BITS_TYPE, //data, read/write  (el valor es 0x09 = 1001)
+        .s = 0x0,                     //system
+        .dpl = 0x00,
+        .p = 0x1, //esta presente
+        .limit_19_16 = 0x00,
+        .avl = 0x0,
+        .l = 0x0, //32 bits
+        .db = 0x0,
+        .g = 0x0,
+        .base_31_24 = 0x00,
+    },
+    [GDT_INDEX_TSS_A] = {
+        .limit_15_0 = sizeof(tss_t) - 1,
+        .base_15_0 = 0x000,
+        .base_23_16 = 0x0,
+        .type = GDT_TSS_32_BITS_TYPE, //data, read/write  (el valor es 0x09 = 1001)
+        .s = 0x0,                     //system
+        .dpl = 0x00,
+        .p = 0x1, //esta presente
+        .limit_19_16 = 0x00,
+        .avl = 0x0,
+        .l = 0x0, //32 bits
+        .db = 0x0,
+        .g = 0x0,
+        .base_31_24 = 0x00,
+    },
+    [GDT_INDEX_TSS_B] = {
+        .limit_15_0 = sizeof(tss_t) - 1,
+        .base_15_0 = 0x000,
+        .base_23_16 = 0x0,
+        .type = GDT_TSS_32_BITS_TYPE, //data, read/write  (el valor es 0x09 = 1001)
+        .s = 0x0,                     //system
+        .dpl = 0x00,
+        .p = 0x1, //esta presente
+        .limit_19_16 = 0x00,
+        .avl = 0x0,
+        .l = 0x0, //32 bits
+        .db = 0x0,
+        .g = 0x0,
+        .base_31_24 = 0x00,
+    },
+    [GDT_INDEX_TSS_C] = {
+        .limit_15_0 = sizeof(tss_t) - 1,
+        .base_15_0 = 0x000,
+        .base_23_16 = 0x0,
+        .type = GDT_TSS_32_BITS_TYPE, //data, read/write  (el valor es 0x09 = 1001)
+        .s = 0x0,                     //system
+        .dpl = 0x00,
+        .p = 0x1, //esta presente
+        .limit_19_16 = 0x00,
+        .avl = 0x0,
+        .l = 0x0, //32 bits
+        .db = 0x0,
+        .g = 0x0,
+        .base_31_24 = 0x00,
+    },
+    [GDT_INDEX_TSS_D] = {
+        .limit_15_0 = sizeof(tss_t) - 1,
+        .base_15_0 = 0x000,
+        .base_23_16 = 0x0,
+        .type = GDT_TSS_32_BITS_TYPE, //data, read/write  (el valor es 0x09 = 1001)
+        .s = 0x0,                     //system
+        .dpl = 0x00,
+        .p = 0x1, //esta presente
+        .limit_19_16 = 0x00,
+        .avl = 0x0,
+        .l = 0x0, //32 bits
+        .db = 0x0,
+        .g = 0x0,
+        .base_31_24 = 0x00,
+    },
+}
+
+tss_t tss_initial = { 0 };
+tss_t tss_A = {
+    .ss = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .ds = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .es = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .fs = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .gs = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .cs = GDT_OFF_CS_RING_3 | GDT_RPL_RING_3,
+    .cr3 = mmu_init_task_dir(A_PHY_ADDRESS, A_CODE_START_ADDRESS), // para inicializar el mapa de memoria de la task
+    .eip = virt_code_start,
+    .ebp = 0,
+    .esp = virt_stack_start + 0x1000,
+    .esp0 = mmu_next_free_kernel_page() + 0x1000,
+    .eflags = EFLAGS_DEFAULT_VALUE,
+    .iomap = TSS_IOMAP_ALL_PORTS_DISABLED,
+    .ss0 = GDT_OFF_DS_RING_0 | GDT_RPL_RING_0,
+};
+tss_t tss_B = {
+    .ss = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .ds = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .es = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .fs = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .gs = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .cs = GDT_OFF_CS_RING_3 | GDT_RPL_RING_3,
+    .cr3 = mmu_init_task_dir(B_PHY_ADDRESS, B_CODE_START_ADDRESS),
+    .eip = virt_code_start,
+    .ebp = 0,
+    .esp = virt_stack_start + 0x1000,
+    .esp0 = mmu_next_free_kernel_page() + 0x1000,
+    .eflags = EFLAGS_DEFAULT_VALUE,
+    .iomap = TSS_IOMAP_ALL_PORTS_DISABLED,
+    .ss0 = GDT_OFF_DS_RING_0 | GDT_RPL_RING_0,
+};
+tss_t tss_C = {
+    .ss = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .ds = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .es = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .fs = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .gs = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .cs = GDT_OFF_CS_RING_3 | GDT_RPL_RING_3,
+    .cr3 = mmu_init_task_dir(C_PHY_ADDRESS, C_CODE_START_ADDRESS),
+    .eip = virt_code_start,
+    .ebp = 0,
+    .esp = virt_stack_start + 0x1000,
+    .esp0 = mmu_next_free_kernel_page() + 0x1000,
+    .eflags = EFLAGS_DEFAULT_VALUE,
+    .iomap = TSS_IOMAP_ALL_PORTS_DISABLED,
+    .ss0 = GDT_OFF_DS_RING_0 | GDT_RPL_RING_0,
+};
+tss_t tss_D = {
+    .ss = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .ds = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .es = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .fs = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .gs = GDT_OFF_DS_RING_3 | GDT_RPL_RING_3,
+    .cs = GDT_OFF_CS_RING_3 | GDT_RPL_RING_3,
+    .cr3 = mmu_init_task_dir(D_PHY_ADDRESS, D_CODE_START_ADDRESS),
+    .eip = virt_code_start,
+    .ebp = 0,
+    .esp = virt_stack_start + 0x1000,
+    .esp0 = mmu_next_free_kernel_page() + 0x1000,
+    .eflags = EFLAGS_DEFAULT_VALUE,
+    .iomap = TSS_IOMAP_ALL_PORTS_DISABLED,
+    .ss0 = GDT_OFF_DS_RING_0 | GDT_RPL_RING_0,
+};
+
+
+typedef struct str_tss {
+  uint16_t ptl;
+  uint16_t unused0;
+  uint32_t esp0;
+  uint16_t ss0;
+  uint16_t unused1;
+  uint32_t esp1;
+  uint16_t ss1;
+  uint16_t unused2;
+  uint32_t esp2;
+  uint16_t ss2;
+  uint16_t unused3;
+  uint32_t cr3;
+  uint32_t eip;
+  uint32_t eflags;
+  uint32_t eax;
+  uint32_t ecx;
+  uint32_t edx;
+  uint32_t ebx;
+  uint32_t esp;
+  uint32_t ebp;
+  uint32_t esi;
+  uint32_t edi;
+  uint16_t es;
+  uint16_t unused4;
+  uint16_t cs;
+  uint16_t unused5;
+  uint16_t ss;
+  uint16_t unused6;
+  uint16_t ds;
+  uint16_t unused7;
+  uint16_t fs;
+  uint16_t unused8;
+  uint16_t gs;
+  uint16_t unused9;
+  uint16_t ldt;
+  uint16_t unused10;
+  uint16_t dtrap;
+  uint16_t iomap;
+} __attribute__((__packed__, aligned(8))) tss;
+
+typedef struct str_page_table_entry {
+  uint8_t present : 1;
+  uint8_t read_write : 1;
+  uint8_t user_supervisor : 1;
+  uint8_t page_write_through : 1;
+  uint8_t page_cache_disable : 1;
+  uint8_t accessed : 1;
+  uint8_t dirty : 1;
+  uint8_t x : 1;
+  uint8_t global : 1;
+  uint8_t available : 3;
+  uint32_t physical_address_base : 20;
+} __attribute__((__packed__)) page_table_entry;
+
+typedef struct str_page_directory_entry {
+  uint8_t present : 1;
+  uint8_t read_write : 1;
+  uint8_t user_supervisor : 1;
+  uint8_t page_write_through : 1;
+  uint8_t page_cache_disable : 1;
+  uint8_t accessed : 1;
+  uint8_t x : 1;
+  uint8_t page_size : 1;
+  uint8_t ignored : 1;
+  uint8_t available : 3;
+  uint32_t page_table_base : 20;
+} __attribute__((__packed__)) page_directory_entry;
+
+LS_INLINE void lcr3(uint32_t val) {
+  __asm __volatile("movl %0,%%cr3" : : "r"(val));
+}
+
+LS_INLINE uint32_t rcr3(void) {
+  uint32_t val;
+  __asm __volatile("movl %%cr3,%0" : "=r"(val));
+  return val;
+}
+
+paddr_t mmu_init_task_dir(paddr_t phy_start, paddr_t code_start) {
+  page_directory_entry *page_directory = (page_directory_entry *)mmu_next_free_kernel_page();
+  page_table_entry *page_table = (page_table_entry *)mmu_next_free_kernel_page();
+  //inicializarlas en 0
+  for (int i = 0; i < 1024; i++)   {
+    page_directory[i] = (page_directory_entry){ 0 };
+    page_table[i] = (page_table_entry){ 0 };
+  }
+  page_directory[0].present = 1;
+  page_directory[0].user_supervisor = 1;
+  page_directory[0].read_write = 1;
+  page_directory[0].page_table_base = ((uint32_t)page_table >> 12);
+
+  for (uint8_t i = 0; i < 16; i++) {
+    mmu_map_page(page_directory, virt_code_start + i * 0x1000, phy_start + i * 0x1000, 1, 1);
+  }
+
+  uint32_t virt_start = phy_start;
+  
+  for (uint8_t i = 0; i < 16; i++) {
+    mmu_map_page((page_directory_entry *)rcr3(), virt_start + i * PAGE_SIZE, phy_start + i * PAGE_SIZE, 1, 1);
+  }
+
+  mmu_map_page((page_directory_entry *)rcr3(), virt_start, phy_start, 1, 1);
+  mmu_map_page((page_directory_entry *)rcr3(), virt_start + PAGE_SIZE, phy_start + PAGE_SIZE, 1, 1);
+
+  mmu_map_page((page_directory_entry *)rcr3(), virt_start + 3 * PAGE_SIZE, phy_start + 3 * PAGE_SIZE, 1, 1);
+
+  char *src = (char *)code_start;
+  char *dst = (char *)virt_start;
+
+  for (int i = 0; i < 16 * PAGE_SIZE; ++i)
+    dst[i] = src[i];
+  
+  for (uint8_t i = 0; i < 16; i++) {
+      mmu_unmap_page((page_directory_entry *)rcr3(), virt_start + i * PAGE_SIZE);
+  }
+
+  tlbflush();
+
+  return (uint32_t)page_directory;
+}

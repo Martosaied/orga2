@@ -1,0 +1,17 @@
+En este archivo se encuentran las definiciones iniciales de las TSS de las tareas INIT, IDLE, Rick y Morty. Asi como tambien esta definido 
+de manera global 2 arrays en los que se encuentran las TSS de los Mr Meeseeks de Morty y otro para los Mr Meeseeks de Rick. Este ultimo array tiene una correspondencia directa con los
+arrays de tareas definidos en el Scheduler. Donde el indice en el array del schduler corresponde al mismo indice - 1 en los arrays de TSS.
+La definicion de las TSS primeras 4 tareas mencionadas ocurre en tiempo de compilacion para casi toda sus campos.
+
+Luego en tss_init, la cual es ejecutada en el kernel, nos encargamos de cargar los valores que son obtenidos dinamicamente y de completar todas las TSS de los meeseeks
+Entro los campos que completamos estan:
+    - Las bases de todas las TSS
+    - El CR3 el cual es obtenido a partir de inicilizar el mapa de memoria de las tareas Rick y Morty. Luego dichos CR3 son utilizados en las tareas meeseeks tambien.
+    - La pila de nivel de 0 para todas las tareas, para la cual pedimos una pagina libre del kernel.
+
+El resto de los campos, como dijimos, en su mayoria fueron completados a partir de la consigna.
+
+Una ultima aclaracion, en tss.c se puede como creamos las tss de los Mr Meeseeks con EIP y ESP en 0.
+Esto se debe a que luego, en game.c a la hora de efectivamente CREAR un Mr Meeseeks seteamos el EIP y el ESP mapeando el codigo que ejecutara el meeseeks
+desde el area virtual de los Mr Meeseeks(organizado a partir de sus indices) a la celda en la que se encontrara en el mapa. Daremos mas detalles
+a la hora de explicar game.c. 

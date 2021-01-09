@@ -1,0 +1,17 @@
+En el archivo kernel.asm se define la secuencia de pasos necesaria para arrancar el sistema(pasar a modo protegido, activado de paginación, etc) para luego pasar a ejecutar las tareas
+ 
+Lo primero que nos encontramos en el mismo es el pasaje a modo protegido, donde fue necesario habilitar el pin A20 del procesador (se utilizó la
+instrucción habilitarA20 provista por la cátedra) para poder direccionar más de 1 MB, a diferencia
+que lo que sucede en modo real. Luego, se cargo la dirección base de la GDT en el registro GDTR mediante la instrucci´on lgdt
+Se puso en 1 el bit menos significativo del registro CR0 para activar el modo protegido y se realizó un salto a la primera instrucción utilizando el selector de segmento de
+código de nivel 0.
+Una vez en modo protegido, se cargaron los registros de segmento de la siguiente manera:
+ds, es, gs, ss: selector de datos de nivel 0
+fs: selector de video (datos de nivel 0).
+Además, se estableció la base de la pila del kernel en la dirección 0x25000 cargando la misma en los registros esp y ebp..
+ 
+Luego procederemos a inicializar y limpiar por primera vez la pantalla usando el registro de segmento fs.
+Acto seguido, inicializamos el manejador de memoria, el directorio de páginas del kernel y cargamos el puntero a ese directorio en cr3.
+Después habilitamos paginación, hacemos el init de todas las tss, asi como tambien de la idt y el scheduler
+configuramos el controlador de interrupciones cargamos la tarea inicial, pintamos la pantalla con el mapa del juego y comenzamos con el.
+Por último activamos las interrupciones y saltamos a la tarea idle.

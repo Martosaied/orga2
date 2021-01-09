@@ -1,0 +1,456 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2020.10.11)  24 OCT 2020 17:52
+entering extended mode
+ restricted \write18 enabled.
+ file:line:error style messages enabled.
+ %&-line parsing enabled.
+**/home/martin/facultad/orga_2/TPS/orga2-tp2/doc/informe.tex
+(/home/martin/facultad/orga_2/TPS/orga2-tp2/doc/informe.tex
+LaTeX2e <2020-02-02> patch level 2
+L3 programming layer <2020-02-14> (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2019/12/20 v1.4l Standard LaTeX document class
+(/usr/share/texlive/texmf-dist/tex/latex/base/size10.clo
+File: size10.clo 2019/12/20 v1.4l Standard LaTeX file (size option)
+)
+\c@part=\count167
+\c@section=\count168
+\c@subsection=\count169
+\c@subsubsection=\count170
+\c@paragraph=\count171
+\c@subparagraph=\count172
+\c@figure=\count173
+\c@table=\count174
+\abovecaptionskip=\skip47
+\belowcaptionskip=\skip48
+\bibindent=\dimen134
+) (/usr/share/texlive/texmf-dist/tex/generic/babel/babel.sty
+Package: babel 2020/02/14 3.40 The Babel package
+ (/usr/share/texlive/texmf-dist/tex/generic/babel/switch.def
+File: switch.def 2020/02/14 3.40 Babel switching mechanism
+) (/usr/share/texlive/texmf-dist/tex/generic/babel-spanish/spanish.ldf
+Language: spanish.ldf 2016/03/03 v5.0p Spanish support from the babel system
+ (/usr/share/texlive/texmf-dist/tex/generic/babel/babel.def
+File: babel.def 2020/02/14 3.40 Babel common definitions
+\babel@savecnt=\count175
+\U@D=\dimen135
+ (/usr/share/texlive/texmf-dist/tex/generic/babel/txtbabel.def)
+\bbl@readstream=\read2
+\bbl@dirlevel=\count176
+)
+\es@quottoks=\toks14
+\es@quotdepth=\count177
+Package babel Info: Making " an active character on input line 561.
+Package babel Info: Making . an active character on input line 662.
+Package babel Info: Making < an active character on input line 707.
+Package babel Info: Making > an active character on input line 707.
+)) (/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty
+Package: inputenc 2018/08/11 v1.3c Input encoding file
+\inpenc@prehook=\toks15
+\inpenc@posthook=\toks16
+) (/usr/share/texlive/texmf-dist/tex/latex/psnfss/charter.sty
+Package: charter 2005/04/12 PSNFSS-v9.2a (P.Dyballa) 
+) (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2019/11/30 v1.2a Enhanced LaTeX Graphics (DPC,SPQR)
+ (/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks17
+) (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2019/11/30 v1.4a Standard LaTeX Graphics (DPC,SPQR)
+ (/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
+) (/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 105.
+ (/usr/share/texlive/texmf-dist/tex/latex/graphics-def/pdftex.def
+File: pdftex.def 2018/01/08 v1.0l Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen136
+\Gin@req@width=\dimen137
+) (/usr/share/texlive/texmf-dist/tex/latex/paralist/paralist.sty
+Package: paralist 2017/01/22 v2.7 Extended list environments
+\pltopsep=\skip49
+\plpartopsep=\skip50
+\plitemsep=\skip51
+\plparsep=\skip52
+\pl@lab=\toks18
+) (/usr/share/texlive/texmf-dist/tex/latex/underscore/underscore.sty
+Package: underscore 2006/09/13
+LaTeX Info: Redefining \_ on input line 42.
+) (/home/martin/facultad/orga_2/TPS/orga2-tp2/doc/caratula.sty
+Package: caratula 2005/08/09 v0.3 Para componer caratulas de TPs del DC
+
+Cargando package 'caratula' v0.3 (2005/08/09)
+\intlist=\toks19
+) (/usr/share/texlive/texmf-dist/tex/latex/url/url.sty
+\Urlmuskip=\muskip16
+Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
+) (/usr/share/texlive/texmf-dist/tex/latex/graphics/color.sty
+Package: color 2019/11/23 v1.2a Standard LaTeX Color (DPC)
+ (/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package color Info: Driver file: pdftex.def on input line 147.
+) (/usr/share/texlive/texmf-dist/tex/latex/fancybox/fancybox.sty
+Package: fancybox 2010/05/15 1.4
+
+Style option: `fancybox' v1.4 <2010/05/15> (tvz)
+\@fancybox=\box45
+\shadowsize=\dimen138
+\@Sbox=\box46
+\do@VerbBox=\toks20
+\the@fancyput=\toks21
+\this@fancyput=\toks22
+\EndVerbatimTokens=\toks23
+\Verbatim@Outfile=\write3
+\Verbatim@Infile=\read3
+) (/usr/share/texlive/texmf-dist/tex/latex/fancyhdr/fancyhdr.sty
+Package: fancyhdr 2019/01/31 v3.10 Extensive control of page headers and footers
+\f@nch@headwidth=\skip53
+\f@nch@O@elh=\skip54
+\f@nch@O@erh=\skip55
+\f@nch@O@olh=\skip56
+\f@nch@O@orh=\skip57
+\f@nch@O@elf=\skip58
+\f@nch@O@erf=\skip59
+\f@nch@O@olf=\skip60
+\f@nch@O@orf=\skip61
+) (/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdfmode.def
+File: l3backend-pdfmode.def 2020-02-03 L3 backend support: PDF mode
+\l__kernel_color_stack_int=\count178
+\l__pdf_internal_box=\box47
+) (/home/martin/facultad/orga_2/TPS/orga2-tp2/doc/informe.aux
+LaTeX Info: Redefining \. on input line 8.
+LaTeX Info: Redefining \% on input line 8.
+)
+\openout1 = `informe.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 89.
+LaTeX Font Info:    ... okay on input line 89.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 89.
+LaTeX Font Info:    ... okay on input line 89.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 89.
+LaTeX Font Info:    ... okay on input line 89.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 89.
+LaTeX Font Info:    ... okay on input line 89.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 89.
+LaTeX Font Info:    ... okay on input line 89.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 89.
+LaTeX Font Info:    ... okay on input line 89.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 89.
+LaTeX Font Info:    ... okay on input line 89.
+LaTeX Font Info:    Trying to load font information for OT1+bch on input line 89.
+ (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1bch.fd
+File: ot1bch.fd 2004/10/18 font definitions for OT1/bch.
+)
+LaTeX Info: Redefining \. on input line 89.
+LaTeX Info: Redefining \% on input line 89.
+ (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count179
+\scratchdimen=\dimen139
+\scratchbox=\box48
+\nofMPsegments=\count180
+\nofMParguments=\count181
+\everyMPshowfont=\toks24
+\MPscratchCnt=\count182
+\MPscratchDim=\dimen140
+\MPnumerator=\count183
+\makeMPintoPDFobject=\count184
+\everyMPtoPDFconversion=\toks25
+) (/usr/share/texlive/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
+ (/usr/share/texlive/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
+))
+<img/logodc.jpg, id=1, 215.6055pt x 83.5923pt>
+File: img/logodc.jpg Graphic file (type jpg)
+<use img/logodc.jpg>
+Package pdftex.def Info: img/logodc.jpg  used on input line 101.
+(pdftex.def)             Requested size: 215.60497pt x 83.59207pt.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 101.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 101.
+<img/logouba.jpg, id=2, 225.4824pt x 231.7458pt>
+File: img/logouba.jpg Graphic file (type jpg)
+<use img/logouba.jpg>
+Package pdftex.def Info: img/logouba.jpg  used on input line 101.
+(pdftex.def)             Requested size: 225.48184pt x 231.74522pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 101--101
+
+ []
+
+
+Overfull \hbox (22.76358pt too wide) in paragraph at lines 101--101
+[][][] 
+ []
+
+[1
+
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map} </home/martin/facultad/orga_2/TPS/orga2-tp2/doc/img/logodc.jpg> </home/martin/facultad/orga_2/TPS/orga2-tp2/doc/img/logouba.jpg>] (/home/martin/facultad/orga_2/TPS/orga2-tp2/doc/informe.toc
+LaTeX Info: Redefining \. on input line 1.
+LaTeX Info: Redefining \% on input line 1.
+)
+\tf@toc=\write4
+\openout4 = `informe.toc'.
+
+ [2] (/home/martin/facultad/orga_2/TPS/orga2-tp2/doc/introduccion.tex) (/home/martin/facultad/orga_2/TPS/orga2-tp2/doc/desarrollo.tex (/home/martin/facultad/orga_2/TPS/orga2-tp2/doc/desarrollo-imagen-fantasma.tex
+Overfull \hbox (1.89279pt too wide) in paragraph at lines 15--20
+\OT1/cmtt/m/n/10 [ 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 2 | 1 | 0 | 1 | 2 | 1 ]\OT1/bch/m/n/10 , que lue-go de-ber[]a ser mul-
+ []
+
+LaTeX Info: Redefining \. on input line 20.
+LaTeX Info: Redefining \% on input line 20.
+[3]) (/home/martin/facultad/orga_2/TPS/orga2-tp2/doc/desarrollo-color-bordes.tex
+Underfull \hbox (badness 10000) in paragraph at lines 21--39
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 21--39
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 21--39
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 21--39
+
+ []
+
+LaTeX Info: Redefining \. on input line 39.
+LaTeX Info: Redefining \% on input line 39.
+[4]
+Underfull \hbox (badness 10000) in paragraph at lines 48--57
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 48--57
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 76--86
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 76--86
+
+ []
+
+LaTeX Info: Redefining \. on input line 86.
+LaTeX Info: Redefining \% on input line 86.
+[5]
+Underfull \hbox (badness 10000) in paragraph at lines 99--114
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 99--114
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 115--143
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 115--143
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 115--143
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 115--143
+
+ []
+
+LaTeX Info: Redefining \. on input line 143.
+LaTeX Info: Redefining \% on input line 143.
+[6]
+LaTeX Info: Redefining \. on input line 196.
+LaTeX Info: Redefining \% on input line 196.
+ [7]
+Underfull \hbox (badness 10000) in paragraph at lines 197--206
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 197--206
+
+ []
+
+) (/home/martin/facultad/orga_2/TPS/orga2-tp2/doc/desarrollo-reforzar-brillo.tex
+Underfull \hbox (badness 10000) in paragraph at lines 207--1
+$
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 207--1
+
+ []
+
+
+Overfull \hbox (6.0pt too wide) in paragraph at lines 26--26
+ [][][][][][] 
+ []
+
+LaTeX Info: Redefining \. on input line 34.
+LaTeX Info: Redefining \% on input line 34.
+[8]
+Overfull \hbox (6.0pt too wide) in paragraph at lines 53--53
+ [][][][][][] 
+ []
+
+
+Overfull \hbox (6.0pt too wide) in paragraph at lines 67--67
+ [][][][][][] 
+ []
+
+
+Overfull \hbox (12.00185pt too wide) in paragraph at lines 75--75
+[]    \OT1/cmtt/m/n/10 Para todo i (donde i es un n^^Sumero del 0 al 3 que indica la posici^^Son del dw en el xmm)[] 
+ []
+
+LaTeX Font Info:    Trying to load font information for TS1+cmtt on input line 75.
+(/usr/share/texlive/texmf-dist/tex/latex/base/ts1cmtt.fd
+File: ts1cmtt.fd 2019/12/16 v2.5j Standard LaTeX font definitions
+)
+Underfull \hbox (badness 10000) in paragraph at lines 80--85
+
+ []
+
+
+Overfull \hbox (6.0pt too wide) in paragraph at lines 85--85
+ [][][][][][] 
+ []
+
+)) (/home/martin/facultad/orga_2/TPS/orga2-tp2/doc/comparacion.tex
+LaTeX Info: Redefining \. on input line 1.
+LaTeX Info: Redefining \% on input line 1.
+ [9]
+Underfull \hbox (badness 10000) in paragraph at lines 5--7
+
+ []
+
+<img/ImagenFantasma.jpeg, id=43, 633.36626pt x 476.78125pt>
+File: img/ImagenFantasma.jpeg Graphic file (type jpg)
+<use img/ImagenFantasma.jpeg>
+Package pdftex.def Info: img/ImagenFantasma.jpeg  used on input line 10.
+(pdftex.def)             Requested size: 227.62204pt x 171.34283pt.
+<img/ColorBordes.jpeg, id=44, 630.355pt x 473.77pt>
+File: img/ColorBordes.jpeg Graphic file (type jpg)
+<use img/ColorBordes.jpeg>
+Package pdftex.def Info: img/ColorBordes.jpeg  used on input line 11.
+(pdftex.def)             Requested size: 227.62204pt x 171.07756pt.
+<img/ReforzarBrillo.jpeg, id=45, 633.36626pt x 473.77pt>
+File: img/ReforzarBrillo.jpeg Graphic file (type jpg)
+<use img/ReforzarBrillo.jpeg>
+Package pdftex.def Info: img/ReforzarBrillo.jpeg  used on input line 19.
+(pdftex.def)             Requested size: 227.62204pt x 170.26067pt.
+<img/RelacionASMCImagenFantasma.png, id=46, 462.528pt x 346.896pt>
+File: img/RelacionASMCImagenFantasma.png Graphic file (type png)
+<use img/RelacionASMCImagenFantasma.png>
+Package pdftex.def Info: img/RelacionASMCImagenFantasma.png  used on input line 34.
+(pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
+<img/RelacionASMCColorBordes.png, id=48, 462.528pt x 346.896pt>
+File: img/RelacionASMCColorBordes.png Graphic file (type png)
+<use img/RelacionASMCColorBordes.png>
+Package pdftex.def Info: img/RelacionASMCColorBordes.png  used on input line 35.
+(pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
+LaTeX Info: Redefining \. on input line 38.
+LaTeX Info: Redefining \% on input line 38.
+[10 </home/martin/facultad/orga_2/TPS/orga2-tp2/doc/img/ImagenFantasma.jpeg> </home/martin/facultad/orga_2/TPS/orga2-tp2/doc/img/ColorBordes.jpeg> </home/martin/facultad/orga_2/TPS/orga2-tp2/doc/img/ReforzarBrillo.jpeg>]
+<img/RelacionASMCReforzarBrillo.png, id=52, 462.528pt x 346.896pt>
+File: img/RelacionASMCReforzarBrillo.png Graphic file (type png)
+<use img/RelacionASMCReforzarBrillo.png>
+Package pdftex.def Info: img/RelacionASMCReforzarBrillo.png  used on input line 43.
+(pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
+) (/home/martin/facultad/orga_2/TPS/orga2-tp2/doc/experimentacion.tex
+Overfull \hbox (3.07559pt too wide) in paragraph at lines 47--47
+[]\OT1/cmtt/m/n/9 [ low(8*a2) | low(7*b2) | low(7*g2) | low(7*r2) | low(8*a1) | low(7*b1) | low(7*g1) | low(7*r1) ][] 
+ []
+
+
+Overfull \hbox (3.07559pt too wide) in paragraph at lines 47--47
+[]\OT1/cmtt/m/n/9 [ low(8*a2) | low(7*b2) | low(7*g2) | low(7*r2) | low(8*a1) | low(7*b1) | low(7*g1) | low(7*r1) ][] 
+ []
+
+
+Overfull \hbox (3.07559pt too wide) in paragraph at lines 47--47
+[]\OT1/cmtt/m/n/9 [ low(8*a4) | low(7*b4) | low(7*g4) | low(7*r4) | low(8*a3) | low(7*b3) | low(7*g3) | low(7*r3) ][] 
+ []
+
+
+Overfull \hbox (3.07559pt too wide) in paragraph at lines 47--47
+[]\OT1/cmtt/m/n/9 [ low(8*a4) | low(7*b4) | low(7*g4) | low(7*r4) | low(8*a3) | low(7*b3) | low(7*g3) | low(7*r3) ][] 
+ []
+
+
+Overfull \hbox (6.0pt too wide) in paragraph at lines 48--48
+ [][][][][][] 
+ []
+
+LaTeX Info: Redefining \. on input line 48.
+LaTeX Info: Redefining \% on input line 48.
+[11 </home/martin/facultad/orga_2/TPS/orga2-tp2/doc/img/RelacionASMCImagenFantasma.png> </home/martin/facultad/orga_2/TPS/orga2-tp2/doc/img/RelacionASMCColorBordes.png> </home/martin/facultad/orga_2/TPS/orga2-tp2/doc/img/RelacionASMCReforzarBrillo.png>]
+<img/ComparacionErrorExperimentoPato.png, id=59, 457.4691pt x 346.896pt>
+File: img/ComparacionErrorExperimentoPato.png Graphic file (type png)
+<use img/ComparacionErrorExperimentoPato.png>
+Package pdftex.def Info: img/ComparacionErrorExperimentoPato.png  used on input line 71.
+(pdftex.def)             Requested size: 227.62204pt x 172.60594pt.
+<img/ComparacionPerformanceExperimentoPato.png, id=60, 462.528pt x 346.896pt>
+File: img/ComparacionPerformanceExperimentoPato.png Graphic file (type png)
+<use img/ComparacionPerformanceExperimentoPato.png>
+Package pdftex.def Info: img/ComparacionPerformanceExperimentoPato.png  used on input line 72.
+(pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+LaTeX Info: Redefining \. on input line 80.
+LaTeX Info: Redefining \% on input line 80.
+[12]
+LaTeX Info: Redefining \. on input line 104.
+LaTeX Info: Redefining \% on input line 104.
+ [13 </home/martin/facultad/orga_2/TPS/orga2-tp2/doc/img/ComparacionErrorExperimentoPato.png> </home/martin/facultad/orga_2/TPS/orga2-tp2/doc/img/ComparacionPerformanceExperimentoPato.png>]
+<img/BranchControladoVsNOControlado.jpeg, id=70, 642.4pt x 481.8pt>
+File: img/BranchControladoVsNOControlado.jpeg Graphic file (type jpg)
+<use img/BranchControladoVsNOControlado.jpeg>
+Package pdftex.def Info: img/BranchControladoVsNOControlado.jpeg  used on input line 108.
+(pdftex.def)             Requested size: 227.62204pt x 170.71304pt.
+) (/home/martin/facultad/orga_2/TPS/orga2-tp2/doc/conclusion.tex)
+LaTeX Info: Redefining \. on input line 131.
+LaTeX Info: Redefining \% on input line 131.
+ [14 </home/martin/facultad/orga_2/TPS/orga2-tp2/doc/img/BranchControladoVsNOControlado.jpeg>] (/home/martin/facultad/orga_2/TPS/orga2-tp2/doc/informe.aux
+LaTeX Info: Redefining \. on input line 8.
+LaTeX Info: Redefining \% on input line 8.
+) ) 
+Here is how much of TeX's memory you used:
+ 2946 strings out of 483121
+ 43930 string characters out of 5964353
+ 291553 words of memory out of 5000000
+ 17911 multiletter control sequences out of 15000+600000
+ 549117 words of font info for 47 fonts, out of 8000000 for 9000
+ 40 hyphenation exceptions out of 8191
+ 35i,12n,45p,459b,456s stack positions out of 5000i,500n,10000p,200000b,80000s
+ </home/martin/.texlive2019/texmf-var/fonts/pk/ljfour/jknappen/ec/tctt1000.600pk>{/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texlive/texmf-dist/fonts/type1/bitstrea/charter/bchb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/bitstrea/charter/bchr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb>
+Output written on /home/martin/facultad/orga_2/TPS/orga2-tp2/doc/informe.pdf (14 pages, 678599 bytes).
+PDF statistics:
+ 109 PDF objects out of 1000 (max. 8388607)
+ 66 compressed objects within 1 object stream
+ 0 named destinations out of 1000 (max. 500000)
+ 56 words of extra memory for PDF output out of 10000 (max. 10000000)
+

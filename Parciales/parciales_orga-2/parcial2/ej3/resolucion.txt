@@ -1,0 +1,126 @@
+-------------------------------------------------------------------------------------------------
+1. Explicar el diseño propuesto. Indicar cuales son los pasos desde que la tarea busca escuchar
+teclas hasta que le llega la tecla presionada. Implementar en ASM/C la rutina de atención del
+servicio y la rutina de atención de interrupciones del teclado.
+-------------------------------------------------------------------------------------------------
+
+La idea seria tener una variable global que indique el codigo de la tecla que fue presionada
+Esta variable seria de la forma: #define db tecla_presionada y esta definida en ASM.
+La variable indicaria el codigo si es que hay una tecla que fue presionada o -1 en caso contrario.
+
+El servicio EsperarTecla chequearia dicha variable, en caso de encontrar un -1 setearia en el struct de la tarea actual un 1 en un nuevo campo del struct llamado, esperando_tecla.
+Obviamente en caso de encontrar algo distinto a -1, devolveriamos eso como vamos a describir mas adelante de manera mas detallada el funcionamiento de este servicio.
+
+Ademas de setear dicho campo, buscariamos la siguiente tarea a ejecutar y seteariamos la tarea como inactiva.
+En cada interrupcion de reloj ejecutariamos todas las tareas que no tienen esperando_tecla en 1.
+En la interrupcion de teclado guardariamos la tecla presionada y buscariamos en el array de task la tarea que contiene esperando_tecla en 1 para pasarlo a 0, 
+de esta forma la proxima vez que el clock llegue a esa tarea ejecutaria las instrucciones restantes de la isr donde devolveremos la tecla que fue presionada.
+
+El struct de task_info pasaria a ser asi:
+typedef struct str_task_info {
+    int16_t selector_tss;
+    uint32_t pages_amount;
+    uint8_t esperando_tecla; 
+} __attribute__((__packed__)) task_info;
+
+-----------------------------------------
+Agregamos esta entrada a la IDT
+33 (interrupcion de teclado):
+    - OFFSET: &_isr33
+    - SELECTOR: GDT_CODE_RING_0 << 3
+    - ATTR: 0x8E00 (DPL=0, P=1, D=1 (32bits)) --> DPL supervisor
+-----------------------------------------
+extern tecla_seteada
+
+global _isr33
+_isr33:
+        pushad
+
+        in al, 0x60
+        mov bl, al ; muevo al a bl
+        sar bl, 7  ; shifteo bl a la derecha 7 bits para quedarme con el bit mas significativo
+        cmp bl, 1  ; comparo con 1
+        je .teclaSoltada ; si era igual a 1, la tecla estaba siendo soltada
+        mov [tecla_presionada], al
+        call tecla_seteada
+        .teclaSoltada: ; si la tecla fue soltada no quiero setear nada, solo seteo en la interrupcion producida al presionar la tecla
+        popad
+        iret
+-------------------------------------------
+
+Syscall EsperarTecla int 100
+   
+     Parametros       |   Descripcion
+    out EAX=tecla     |   puntero donde se guardara la tecla que fue presionada
+
+Agregamos esta entrada a la IDT
+100 (interrupcion de EsperarTecla):
+    - OFFSET: &_isr100
+    - SELECTOR: GDT_CODE_RING_0 << 3
+    - ATTR: 0xEE00 (DPL=3, P=1, D=1 (32bits))
+
+
+tecla_presionada: db 0xFF
+
+extern nextTask
+extern esperar_tecla
+
+_isr100:
+        push ebp
+        mov ebp, esp
+        sub esp, 4
+        pushad
+
+        cmp [tecla_presionada], 0xFF
+        jne .hayTecla
+
+        call esperar_tecla
+
+        call nextTask
+
+        ;Chequeo que la tarea actual no sea la misma que la siguiente
+        str cx
+        cmp ax, cx
+        je .fin
+        mov [selector], ax
+        jmp far [offset]
+ 
+        .hayTecla:
+        mov [ebp - 4], [tecla_presionada]
+
+        .fin
+        popad
+        pop eax
+        pop ebp
+        iret
+
+void esperar_tecla() {
+    uint8_t esperando_tecla = 1; 
+    for(uint8_t i = 0; i < 4; i++) {
+        if (tasks[i].esperando_tecla == 1) { // Al solo poder haber una tarea esperando una tecla, toda tarea que pida una tecla ya habiendo otra esperando no obtendra nada(ni error, ni desalojo, solo seguiremos de largo y no seteo esperar_tecla en 1)
+            esperando_tecla = 0;
+        }
+    }
+
+    tasks[actual_task].esperando_tecla = esperando_tecla;
+}
+
+void tecla_seteada() {
+    uint8_t i = 0;
+    while (tasks[i].esperando_tecla != 1) {
+        i = (i + 1) % CANT_TAREAS;
+    }
+    tasks[i].esperando_tecla = 0;
+}
+
+// El nextTask tendria unos leves cambios 
+int16_t nextTask() {
+    while (tasks[actual_task].esperando_tecla == 1) {
+        actual_task = (actual_task + 1) % CANT_TAREAS;
+    }
+
+    // Actualizo la tarea actual y devuelvo su selector de tss
+    res = tasks[actual_task].selector_tss;
+    return res;
+}
+
